@@ -73,15 +73,36 @@
                     <label for="checkout" class="form-label">Check-out Datum</label>
                     <input type="date" class="form-control" id="checkout" required>
                 </div>
+
+                <!-- Zusatzangebote mit Checkboxen -->
                 <div class="col-12">
-                    <label for="zusatzangebote" class="form-label">Zusatzangebote</label>
-                    <select id="zusatzangebote" class="form-select" multiple>
-                        <option value="zustellbett">Zustellbett</option>
-                        <option value="kinderbett">Kinderbett</option>
-                        <option value="fruehstueck">Frühstück</option>
-                        <option value="parkplatz">Parkplatz</option>
-                    </select>
+                    <label class="form-label">Zusatzangebote</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="zustellbett" id="zusatzoption1">
+                        <label class="form-check-label" for="zusatzoption1">
+                            Zustellbett
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="kinderbett" id="zusatzoption2">
+                        <label class="form-check-label" for="zusatzoption2">
+                            Kinderbett
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="fruehstueck" id="zusatzoption3">
+                        <label class="form-check-label" for="zusatzoption3">
+                            Frühstück
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="parkplatz" id="zusatzoption4">
+                        <label class="form-check-label" for="zusatzoption4">
+                            Parkplatz
+                        </label>
+                    </div>
                 </div>
+
                 <div class="col-12">
                     <button type="submit" class="btn btn-primary w-100">Buchung abschicken</button>
                 </div>

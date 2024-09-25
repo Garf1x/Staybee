@@ -140,6 +140,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    document.getElementById('buchungsForm')?.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const checkin = document.getElementById('checkin').value;
+        const checkout = document.getElementById('checkout').value;
+    
+        // Auswahl der Checkboxen
+        const zusatzangebote = [];
+        document.querySelectorAll('input[type="checkbox"]:checked').forEach(checkbox => {
+            zusatzangebote.push(checkbox.value);
+        });
+    
+        alert(`Buchung erfolgreich für: ${name}\nE-Mail: ${email}\nCheck-in: ${checkin}\nCheck-out: ${checkout}\nZusatzangebote: ${zusatzangebote.join(', ')}`);
+    });
+    
+
     // Funktion zur Anzeige der gefilterten Ferienwohnungen basierend auf der Ortssuche
     function displayFilteredWohnungen(filteredWohnungen) {
         const container = document.getElementById('ferienwohnungen-container');
