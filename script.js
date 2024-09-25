@@ -37,7 +37,10 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeSearchFunctionality();
     } else if (page === 'buchung') {
         populateDropdown();
-        document.getElementById('wohnungDropdown').addEventListener('change', updateWohnungDetails);
+        document.getElementById('wohnungDropdown').addEventListener('change', function() {
+            const wohnungId = this.value;
+            updateWohnungDetails(wohnungId);
+        });
     }
 
     // Funktion zum Laden der Ferienwohnungen auf der Ferienwohnungsseite
@@ -93,12 +96,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Funktion zur Anzeige der gewählten Ferienwohnung auf der Buchungsseite
-    function updateWohnungDetails() {
-        const wohnungId = document.getElementById('wohnungDropdown').value;
+    function updateWohnungDetails(wohnungId) {
         const wohnung = ferienwohnungen.find(w => w.id == wohnungId);
         if (wohnung) {
             displayWohnungDetails(wohnung);
             initMapBuchung(wohnung);
+        } else {
+            document.getElementById('wohnungDetails').innerHTML = `<p>Ferienwohnung nicht gefunden.</p>`;
         }
     }
 
@@ -175,6 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const checkin = document.getElementById('checkin').value;
         const checkout = document.getElementById('checkout').value;
 
+        // Zusatzangebote Mehrfachauswahl verarbeiten
         const zusatzangebote = Array.from(document.getElementById('zusatzangebote').selectedOptions)
             .map(option => option.text);
 
