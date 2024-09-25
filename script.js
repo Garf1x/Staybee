@@ -29,9 +29,61 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     ];
 
-    // Populate the dropdown with apartment options
+    const page = document.body.getAttribute('data-page');
+    
+    // Initialisiere die Funktionen je nach Seite
+    if (page === 'ferienwohnungen') {
+        loadFerienwohnungen();
+        initializeSearchFunctionality();
+    } else if (page === 'buchung') {
+        populateDropdown();
+        document.getElementById('wohnungDropdown').addEventListener('change', updateWohnungDetails);
+    }
+
+    // Funktion zum Laden der Ferienwohnungen auf der Ferienwohnungsseite
+    function loadFerienwohnungen() {
+        const container = document.getElementById('ferienwohnungen-container');
+        container.innerHTML = '';
+
+        ferienwohnungen.forEach(wohnung => {
+            const card = `
+                <div class="col-md-4">
+                    <div class="card mb-4">
+                        <div class="img-container">
+                            <img src="${wohnung.bild}" class="card-img-top" alt="${wohnung.name}">
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">${wohnung.name}</h5>
+                            <p class="card-text">${wohnung.beschreibung}</p>
+                            <p class="card-text"><strong>Ort:</strong> ${wohnung.ort}</p>
+                            <div id="map${wohnung.id}" style="height: 200px; width: 100%;"></div>
+                            <a href="buchung.html?id=${wohnung.id}" class="btn btn-primary w-100 mt-3">Jetzt buchen</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += card;
+        });
+
+        // Initialisiere die Karten für jede Ferienwohnung
+        initMapsFerienwohnungen();
+    }
+
+    // Funktion zur Initialisierung der Karten auf der Ferienwohnungsseite
+    function initMapsFerienwohnungen() {
+        ferienwohnungen.forEach(wohnung => {
+            const map = L.map(`map${wohnung.id}`).setView([wohnung.lat, wohnung.lng], 10);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            L.marker([wohnung.lat, wohnung.lng]).addTo(map);
+        });
+    }
+
+    // Funktion zum Befüllen des Dropdown-Menüs auf der Buchungsseite
     function populateDropdown() {
         const wohnungDropdown = document.getElementById('wohnungDropdown');
+        wohnungDropdown.innerHTML = `<option value="" selected>Bitte wählen...</option>`; // Reset Dropdown
         ferienwohnungen.forEach(wohnung => {
             const option = document.createElement('option');
             option.value = wohnung.id;
@@ -40,17 +92,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Update the details and map when an apartment is selected
+    // Funktion zur Anzeige der gewählten Ferienwohnung auf der Buchungsseite
     function updateWohnungDetails() {
         const wohnungId = document.getElementById('wohnungDropdown').value;
         const wohnung = ferienwohnungen.find(w => w.id == wohnungId);
         if (wohnung) {
             displayWohnungDetails(wohnung);
-            initMap(wohnung);
+            initMapBuchung(wohnung);
         }
     }
 
-    // Display selected apartment details
+    // Funktion zur Anzeige der Details der ausgewählten Wohnung auf der Buchungsseite
     function displayWohnungDetails(wohnung) {
         document.getElementById('wohnungDetails').innerHTML = `
             <img src="${wohnung.bild}" class="img-fluid mb-3" alt="${wohnung.name}">
@@ -59,8 +111,8 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
-    // Initialize map for the selected apartment
-    function initMap(wohnung) {
+    // Funktion zur Initialisierung der Karte auf der Buchungsseite
+    function initMapBuchung(wohnung) {
         const mapContainer = document.createElement('div');
         mapContainer.id = `map${wohnung.id}`;
         mapContainer.style.height = '300px';
@@ -73,9 +125,59 @@ document.addEventListener('DOMContentLoaded', () => {
         L.marker([wohnung.lat, wohnung.lng]).addTo(map);
     }
 
-    // Attach the update function to the dropdown change event
-    document.getElementById('wohnungDropdown').addEventListener('change', updateWohnungDetails);
+    // Suchfunktion auf der Ferienwohnungsseite
+    function initializeSearchFunctionality() {
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const searchValue = this.value.toLowerCase();
+            const filteredWohnungen = ferienwohnungen.filter(wohnung =>
+                wohnung.ort.toLowerCase().includes(searchValue)
+            );
+            displayFilteredWohnungen(filteredWohnungen);
+        });
+    }
 
-    // Populate the dropdown on page load
-    populateDropdown();
+    // Funktion zur Anzeige der gefilterten Ferienwohnungen basierend auf der Ortssuche
+    function displayFilteredWohnungen(filteredWohnungen) {
+        const container = document.getElementById('ferienwohnungen-container');
+        container.innerHTML = '';
+
+        if (filteredWohnungen.length === 0) {
+            container.innerHTML = `<p>Keine Ferienwohnungen gefunden.</p>`;
+        } else {
+            filteredWohnungen.forEach(wohnung => {
+                const card = `
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="img-container">
+                                <img src="${wohnung.bild}" class="card-img-top" alt="${wohnung.name}">
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">${wohnung.name}</h5>
+                                <p class="card-text">${wohnung.beschreibung}</p>
+                                <p class="card-text"><strong>Ort:</strong> ${wohnung.ort}</p>
+                                <div id="map${wohnung.id}" style="height: 200px; width: 100%;"></div>
+                                <a href="buchung.html?id=${wohnung.id}" class="btn btn-primary w-100 mt-3">Jetzt buchen</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+            initMapsFerienwohnungen();
+        }
+    }
+
+    // Buchungsformular verarbeiten
+    document.getElementById('buchungsForm')?.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const checkin = document.getElementById('checkin').value;
+        const checkout = document.getElementById('checkout').value;
+
+        const zusatzangebote = Array.from(document.getElementById('zusatzangebote').selectedOptions)
+            .map(option => option.text);
+
+        alert(`Buchung erfolgreich für: ${name}\nE-Mail: ${email}\nCheck-in: ${checkin}\nCheck-out: ${checkout}\nZusatzangebote: ${zusatzangebote.join(', ')}`);
+    });
 });
