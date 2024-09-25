@@ -6,8 +6,10 @@
     <title>Buchung - StayBee</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Leaflet CSS für die Karten -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 </head>
-<body>
+<body data-page="buchung">
 
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -18,10 +20,18 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="ferienwohnungen.html">Ferienwohnungen</a></li>
-                    <li class="nav-item"><a class="nav-link" href="buchung.html">Buchung</a></li>
-                    <li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="ferienwohnungen.html">Ferienwohnungen</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="buchung.html">Buchung</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="login.html">Login</a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -30,20 +40,23 @@
     <!-- Buchungsdetails -->
     <section class="py-5">
         <div class="container">
-            <h2 class="text-center" id="wohnungName">Buchungsdetails</h2>
+            <h2 class="text-center">Buchungsdetails</h2>
 
             <!-- Dropdown zur Auswahl der Ferienwohnung -->
-            <div class="mb-4 text-center" id="wohnungDropdownContainer">
+            <div class="mb-4 text-center">
                 <label for="wohnungDropdown" class="form-label">Wählen Sie eine Ferienwohnung</label>
-                <select id="wohnungDropdown" class="form-select" onchange="updateWohnungDetails()">
+                <select id="wohnungDropdown" class="form-select">
                     <option value="" selected>Bitte wählen...</option>
                 </select>
             </div>
 
-            <div id="wohnungDetails" class="text-center"></div>
+            <!-- Details der ausgewählten Ferienwohnung -->
+            <div id="wohnungDetails" class="text-center">
+                <!-- Ferienwohnung-Details werden hier angezeigt -->
+            </div>
 
             <!-- Buchungsformular -->
-            <form id="buchungsForm" class="row g-3">
+            <form id="buchungsForm" class="row g-3 mt-4">
                 <div class="col-md-6">
                     <label for="name" class="form-label">Ihr Name</label>
                     <input type="text" class="form-control" id="name" required>
@@ -60,13 +73,13 @@
                     <label for="checkout" class="form-label">Check-out Datum</label>
                     <input type="date" class="form-control" id="checkout" required>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12">
                     <label for="zusatzangebote" class="form-label">Zusatzangebote</label>
                     <select id="zusatzangebote" class="form-select" multiple>
                         <option value="zustellbett">Zustellbett</option>
                         <option value="kinderbett">Kinderbett</option>
                         <option value="fruehstueck">Frühstück</option>
-                        <option value="parken">Parkplatz</option>
+                        <option value="parkplatz">Parkplatz</option>
                     </select>
                 </div>
                 <div class="col-12">
@@ -76,10 +89,14 @@
         </div>
     </section>
 
+    <!-- Footer -->
     <footer class="bg-dark text-white text-center py-3">
         <p>&copy; 2024 StayBee - Alle Rechte vorbehalten</p>
     </footer>
 
+    <!-- Bootstrap und Leaflet.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
