@@ -31,19 +31,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const page = document.body.getAttribute('data-page');
     
-    // Initialisiere die Funktionen je nach Seite
+    // Initialize page-specific functionality
     if (page === 'ferienwohnungen') {
         loadFerienwohnungen();
         initializeSearchFunctionality();
     } else if (page === 'buchung') {
         populateDropdown();
+        handlePreselectedApartment();
+        setMinDateForBooking(); // Set the minimum date for booking fields
         document.getElementById('wohnungDropdown').addEventListener('change', function() {
             const wohnungId = this.value;
             updateWohnungDetails(wohnungId);
         });
     }
 
-    // Funktion zum Laden der Ferienwohnungen auf der Ferienwohnungsseite
+    // Function to load apartments on the Ferienwohnungen page
     function loadFerienwohnungen() {
         const container = document.getElementById('ferienwohnungen-container');
         container.innerHTML = '';
@@ -68,11 +70,11 @@ document.addEventListener('DOMContentLoaded', () => {
             container.innerHTML += card;
         });
 
-        // Initialisiere die Karten für jede Ferienwohnung
+        // Initialize the maps for each apartment
         initMapsFerienwohnungen();
     }
 
-    // Funktion zur Initialisierung der Karten auf der Ferienwohnungsseite
+    // Function to initialize maps on the Ferienwohnungen page
     function initMapsFerienwohnungen() {
         ferienwohnungen.forEach(wohnung => {
             const map = L.map(`map${wohnung.id}`).setView([wohnung.lat, wohnung.lng], 10);
@@ -83,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Funktion zum Befüllen des Dropdown-Menüs auf der Buchungsseite
+    // Populate the dropdown on the Buchung page
     function populateDropdown() {
         const wohnungDropdown = document.getElementById('wohnungDropdown');
         wohnungDropdown.innerHTML = `<option value="" selected>Bitte wählen...</option>`; // Reset Dropdown
@@ -95,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Funktion zur Anzeige der gewählten Ferienwohnung auf der Buchungsseite
+    // Update details of the selected apartment on the Buchung page
     function updateWohnungDetails(wohnungId) {
         const wohnung = ferienwohnungen.find(w => w.id == wohnungId);
         if (wohnung) {
@@ -106,16 +108,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Funktion zur Anzeige der Details der ausgewählten Wohnung auf der Buchungsseite
+    // Display details of the selected apartment on the Buchung page and apply the small image class
     function displayWohnungDetails(wohnung) {
         document.getElementById('wohnungDetails').innerHTML = `
-            <img src="${wohnung.bild}" class="img-fluid mb-3" alt="${wohnung.name}">
+            <img src="${wohnung.bild}" class="img-fluid mb-3 small-image" alt="${wohnung.name}">
             <p><strong>Ort:</strong> ${wohnung.ort}</p>
             <p>${wohnung.beschreibung}</p>
         `;
     }
 
-    // Funktion zur Initialisierung der Karte auf der Buchungsseite
+    // Initialize the map on the Buchung page
     function initMapBuchung(wohnung) {
         const mapContainer = document.createElement('div');
         mapContainer.id = `map${wohnung.id}`;
@@ -129,7 +131,25 @@ document.addEventListener('DOMContentLoaded', () => {
         L.marker([wohnung.lat, wohnung.lng]).addTo(map);
     }
 
-    // Suchfunktion auf der Ferienwohnungsseite
+    // Function to handle preselection of apartment from the URL
+    function handlePreselectedApartment() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedWohnungId = urlParams.get('id');
+    
+        if (selectedWohnungId) {
+            document.getElementById('wohnungDropdown').value = selectedWohnungId;
+            updateWohnungDetails(selectedWohnungId);
+        }
+    }
+
+    // Function to set the minimum date to today for the check-in and check-out fields
+    function setMinDateForBooking() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('checkin').setAttribute('min', today);
+        document.getElementById('checkout').setAttribute('min', today);
+    }
+
+    // Initialize search functionality on the Ferienwohnungen page
     function initializeSearchFunctionality() {
         document.getElementById('searchInput').addEventListener('input', function() {
             const searchValue = this.value.toLowerCase();
@@ -140,24 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    document.getElementById('buchungsForm')?.addEventListener('submit', function(event) {
-        event.preventDefault();
-        const name = document.getElementById('name').value;
-        const email = document.getElementById('email').value;
-        const checkin = document.getElementById('checkin').value;
-        const checkout = document.getElementById('checkout').value;
-    
-        // Auswahl der Checkboxen
-        const zusatzangebote = [];
-        document.querySelectorAll('input[type="checkbox"]:checked').forEach(checkbox => {
-            zusatzangebote.push(checkbox.value);
-        });
-    
-        alert(`Buchung erfolgreich für: ${name}\nE-Mail: ${email}\nCheck-in: ${checkin}\nCheck-out: ${checkout}\nZusatzangebote: ${zusatzangebote.join(', ')}`);
-    });
-    
-
-    // Funktion zur Anzeige der gefilterten Ferienwohnungen basierend auf der Ortssuche
+    // Display filtered apartments based on the search input
     function displayFilteredWohnungen(filteredWohnungen) {
         const container = document.getElementById('ferienwohnungen-container');
         container.innerHTML = '';
@@ -188,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Buchungsformular verarbeiten
+    // Process the booking form submission
     document.getElementById('buchungsForm')?.addEventListener('submit', function(event) {
         event.preventDefault();
         const name = document.getElementById('name').value;
@@ -196,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const checkin = document.getElementById('checkin').value;
         const checkout = document.getElementById('checkout').value;
 
-        // Zusatzangebote Mehrfachauswahl verarbeiten
+        // Process multiple selected additional offers
         const zusatzangebote = Array.from(document.getElementById('zusatzangebote').selectedOptions)
             .map(option => option.text);
 

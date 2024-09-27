@@ -184,6 +184,13 @@ footer {
     border-color: #e6b800;
 }
 
+/* Small image styling for the booking page */
+.small-image {
+    max-width: 200px;
+    height: auto;
+    margin-bottom: 15px;
+}
+
 /* Responsives Design */
 @media (max-width: 768px) {
     .hero-section h1 {
