@@ -43,6 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const wohnungId = this.value;
             updateWohnungDetails(wohnungId);
         });
+    } else if (page === 'inserate-bearbeiten') {
+        loadInserateVerwaltung();
     }
 
     // Function to load apartments on the Ferienwohnungen page
@@ -206,38 +208,183 @@ document.addEventListener('DOMContentLoaded', () => {
         alert(`Buchung erfolgreich für: ${name}\nE-Mail: ${email}\nCheck-in: ${checkin}\nCheck-out: ${checkout}\nZusatzangebote: ${zusatzangebote.join(', ')}`);
     });
 
-    // Login handling
-    document.getElementById('loginForm')?.addEventListener('submit', function(event) {
-        event.preventDefault(); // Verhindert das Standardformular-Verhalten
+    // Login functionality
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Verhindert das Standardformular-Verhalten
 
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
 
-        fetch('http://localhost:4000/login', { // Stelle sicher, dass der richtige Port verwendet wird
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email: email, kennwort: password }) // Beachte die genaue Struktur
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Login fehlgeschlagen'); // Fehler bei nicht erfolgreicher Antwort
-            }
-            return response.json(); // Versuche nur JSON zu lesen, wenn der Response OK ist
-        })
-        .then(data => {
-            if (data.token) {
-                localStorage.setItem('authToken', data.token);
-                localStorage.setItem('userRole', data.rolle);
-                window.location.href = 'index.html'; // Weiterleitung nach erfolgreichem Login
-            } else {
-                alert('Ein Fehler ist aufgetreten, bitte versuchen Sie es erneut.');
-            }
-        })
-        .catch(error => {
-            console.error('Fehler beim Login:', error);
-            alert('Ein Fehler ist aufgetreten, bitte versuchen Sie es erneut.');
+            fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email, kennwort: password }) // Anpassung an die erwartete API-Struktur
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Login fehlgeschlagen');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.token) {
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('userRole', data.rolle);
+                    window.location.href = 'index.html'; // Weiterleitung nach erfolgreichem Login
+                } else {
+                    alert('Ein Fehler ist aufgetreten, bitte versuchen Sie es erneut.');
+                }
+            })
+            .catch(error => console.error('Fehler beim Login:', error));
         });
-    });
+    }
+
+    // Logout functionality
+    const logoutButton = document.getElementById('logoutButton');
+    if (logoutButton) {
+        logoutButton.addEventListener('click', function() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userRole');
+            window.location.href = 'index.html'; // Weiterleitung nach dem Logout
+        });
+    }
+    
+    // Admin functionality: Inserate bearbeiten
+    function loadInserateVerwaltung() {
+        fetch('/api/ferienwohnungen', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+        })
+        .then(response => response.json())
+        .then(ferienwohnungen => {
+            const inserateContainer = document.getElementById('inserate-container');
+            inserateContainer.innerHTML = ''; // Clear previous content
+            
+            ferienwohnungen.forEach(wohnung => {
+                const card = `
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="img-container">
+                                <img src="${wohnung.bild}" class="card-img-top" alt="${wohnung.name}">
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">${wohnung.name}</h5>
+                                <p class="card-text">${wohnung.beschreibung}</p>
+                                <p class="card-text"><strong>Ort:</strong> ${wohnung.ort}</p>
+                                <button class="btn btn-danger" onclick="deleteInserat('${wohnung._id}')">Löschen</button>
+                                <button class="btn btn-warning" onclick="editInserat('${wohnung._id}')">Bearbeiten</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                inserateContainer.innerHTML += card;
+            });
+        })
+        .catch(error => console.error('Fehler beim Laden der Inserate:', error));
+    }
+
+    window.deleteInserat = function(id) {
+        fetch(`/api/ferienwohnungen/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Inserat gelöscht');
+            loadInserateVerwaltung(); // Reload after deletion
+        })
+        .catch(error => console.error('Fehler beim Löschen des Inserats:', error));
+    }
+
+    window.editInserat = function(id) {
+        // Placeholder: Implement editing functionality here
+        alert(`Inserat ${id} bearbeiten`);
+    }
+
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const authToken = localStorage.getItem('authToken');
+    const userRole = localStorage.getItem('userRole');
+    
+    const loginNav = document.getElementById('loginNav');
+    const logoutNav = document.getElementById('logoutNav');
+    const adminNav = document.getElementById('adminNav');
+
+    // Überprüfe, ob ein Authentifizierungstoken vorhanden ist
+    if (authToken) {
+        loginNav.style.display = 'none';
+        logoutNav.style.display = 'block';
+
+        // Wenn der Benutzer ein Admin ist, zeige den Admin-Link
+        if (userRole === 'admin') {
+            adminNav.style.display = 'block';
+        }
+    } else {
+        loginNav.style.display = 'block';
+        logoutNav.style.display = 'none';
+        adminNav.style.display = 'none'; // Admin-Link verstecken, wenn nicht eingeloggt
+    }
+
+    // Logout-Event
+    const logoutButton = document.getElementById('logoutButton');
+    if (logoutButton) {
+        logoutButton.addEventListener('click', function() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userRole');
+            window.location.href = 'index.html';
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Laden und Verwalten der Inserate
+    const inseratForm = document.getElementById('inseratForm');
+
+    // Event-Listener für das Formular zum Hinzufügen neuer Inserate
+    if (inseratForm) {
+        inseratForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const ort = document.getElementById('ort').value;
+            const beschreibung = document.getElementById('beschreibung').value;
+            const preis = document.getElementById('preis').value;
+
+            const newInserat = {
+                name: name,
+                ort: ort,
+                beschreibung: beschreibung,
+                preis: preis,
+                verfuegbarkeit: true // Standardwert für Verfügbarkeit
+            };
+
+            // Fetch-Request an die API zum Hinzufügen des Inserats
+            fetch('/api/ferienwohnungen', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}` // Token für Authentifizierung
+                },
+                body: JSON.stringify(newInserat)
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Ferienwohnung erfolgreich hinzugefügt');
+                    inseratForm.reset();
+                    loadInserateVerwaltung(); // Die Inserate erneut laden
+                } else {
+                    throw new Error('Fehler beim Hinzufügen der Ferienwohnung');
+                }
+            })
+            .catch(error => console.error('Fehler:', error));
+        });
+    }
 });

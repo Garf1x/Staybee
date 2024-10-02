@@ -57,7 +57,6 @@ app.post('/login', async (req, res) => {
   }
 });
 
-
 // Middleware: Authentifizierung prüfen
 function authMiddleware(req, res, next) {
   const token = req.headers['authorization'];
@@ -78,7 +77,7 @@ function adminMiddleware(req, res, next) {
 }
 
 // Route: Alle Ferienwohnungen anzeigen
-app.get('/ferienwohnungen', authMiddleware, async (req, res) => {
+app.get('/api/ferienwohnungen', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const ferienwohnungen = await Ferienwohnung.find();
     res.json(ferienwohnungen);
@@ -87,8 +86,8 @@ app.get('/ferienwohnungen', authMiddleware, async (req, res) => {
   }
 });
 
-// Route: Ferienwohnung hinzufügen (nur Admins)
-app.post('/ferienwohnungen', authMiddleware, adminMiddleware, async (req, res) => {
+// Route: Neues Inserat (Ferienwohnung) hinzufügen (nur Admins)
+app.post('/api/ferienwohnungen', authMiddleware, adminMiddleware, async (req, res) => {
   const ferienwohnung = new Ferienwohnung(req.body);
   try {
     const neueFerienwohnung = await ferienwohnung.save();
@@ -98,8 +97,8 @@ app.post('/ferienwohnungen', authMiddleware, adminMiddleware, async (req, res) =
   }
 });
 
-// Route: Ferienwohnung bearbeiten (nur Admins)
-app.patch('/ferienwohnungen/:id', authMiddleware, adminMiddleware, async (req, res) => {
+// Route: Inserat (Ferienwohnung) bearbeiten (nur Admins)
+app.patch('/api/ferienwohnungen/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const ferienwohnung = await Ferienwohnung.findById(req.params.id);
     if (!ferienwohnung) return res.status(404).json({ message: 'Ferienwohnung nicht gefunden' });
@@ -117,8 +116,8 @@ app.patch('/ferienwohnungen/:id', authMiddleware, adminMiddleware, async (req, r
   }
 });
 
-// Route: Ferienwohnung löschen (nur Admins)
-app.delete('/ferienwohnungen/:id', authMiddleware, adminMiddleware, async (req, res) => {
+// Route: Inserat (Ferienwohnung) löschen (nur Admins)
+app.delete('/api/ferienwohnungen/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const ferienwohnung = await Ferienwohnung.findById(req.params.id);
     if (!ferienwohnung) return res.status(404).json({ message: 'Ferienwohnung nicht gefunden' });
@@ -134,6 +133,39 @@ app.delete('/ferienwohnungen/:id', authMiddleware, adminMiddleware, async (req, 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+// Weitere HTML-Seiten ausliefern
+app.get('/login.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+app.get('/register.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'register.html'));
+});
+
+app.get('/ferienwohnungen.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'ferienwohnungen.html'));
+});
+
+app.get('/buchung.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'buchung.html'));
+});
+
+app.get('/inserate-bearbeiten.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'inserate-bearbeiten.html'));
+});
+
+// Route: Ferienwohnung hinzufügen (nur Admins)
+app.post('/api/ferienwohnungen', authMiddleware, adminMiddleware, async (req, res) => {
+  const ferienwohnung = new Ferienwohnung(req.body);
+  try {
+      const neueFerienwohnung = await ferienwohnung.save();
+      res.status(201).json(neueFerienwohnung);
+  } catch (err) {
+      res.status(400).json({ message: err.message });
+  }
+});
+
 
 // Server starten
 const PORT = process.env.PORT || 4000;
