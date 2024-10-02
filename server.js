@@ -76,15 +76,16 @@ function adminMiddleware(req, res, next) {
   next();
 }
 
-// Route: Alle Ferienwohnungen anzeigen
-app.get('/api/ferienwohnungen', authMiddleware, adminMiddleware, async (req, res) => {
+// Route: Alle Ferienwohnungen anzeigen (ohne Authentifizierung)
+app.get('/api/ferienwohnungen', async (req, res) => {
   try {
-    const ferienwohnungen = await Ferienwohnung.find();
-    res.json(ferienwohnungen);
+      const ferienwohnungen = await Ferienwohnung.find();
+      res.json(ferienwohnungen);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+      res.status(500).json({ message: err.message });
   }
 });
+
 
 // Route: Neues Inserat (Ferienwohnung) hinzufügen (nur Admins)
 app.post('/api/ferienwohnungen', authMiddleware, adminMiddleware, async (req, res) => {
