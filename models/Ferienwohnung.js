@@ -21,7 +21,13 @@ const FerienwohnungSchema = new mongoose.Schema({
     verfuegbarkeit: {
         type: Boolean,
         default: true
-    }
+    },
+    bild: {
+        type: String, // Field for storing the image path
+        required: false
+    },
+    lat: Number,
+    lng: Number
 });
 
 module.exports = mongoose.model('Ferienwohnung', FerienwohnungSchema);

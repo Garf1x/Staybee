@@ -38,10 +38,11 @@
         
             <label for="ort">Ort</label>
             <input type="text" id="ort" name="ort" class="form-control" required>
-        
-            <label for="adresse">Adresse</label>
-            <input type="text" id="adresse" name="adresse" class="form-control" placeholder="Straße, Stadt, PLZ" required>
-        
+
+            <label for="address">Adresse</label>
+            <input type="text" class="form-control" id="address" placeholder="Geben Sie die Adresse der Ferienwohnung ein" required>
+            <small class="form-text text-muted">Bitte geben Sie die Adresse in dem Format ein, wie sie auch auf Google Maps auffindbar ist.</small>
+            <div class="mb-3"></div>
             <label for="beschreibung">Beschreibung</label>
             <textarea id="beschreibung" name="beschreibung" class="form-control" required></textarea>
         
@@ -53,8 +54,6 @@
         <div class="mb-3"></div>
             <button type="submit" class="btn btn-primary">Inserat erstellen</button>
         </form>
-        
-
     </section>
 
     <!-- Footer -->

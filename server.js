@@ -4,60 +4,79 @@ const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-const path = require('path'); // Path-Modul zum Ausliefern von HTML-Dateien
-require('dotenv').config(); // Umgebungsvariablen aus .env-Datei laden
+const multer = require('multer'); // To handle file uploads
+const path = require('path'); // For serving static files
+require('dotenv').config(); // Load environment variables
 
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-// Statische Dateien ausliefern (CSS, JS, Bilder, HTML)
+// Static files (CSS, JS, Images, HTML)
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static('uploads')); // Serve uploaded images
 
+// MongoDB connection
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB verbunden'))
   .catch(err => console.error('Fehler bei der MongoDB-Verbindung:', err));
 
+// Multer storage configuration for image uploads
+const storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function(req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+});
+const upload = multer({ storage: storage });
+
+// User schema
 const BenutzerSchema = new mongoose.Schema({
   name: String,
   email: String,
   kennwort: String,
-  rolle: { type: String, default: 'user' } // Standardmäßig Benutzer, Admin manuell hinzufügen
+  rolle: { type: String, default: 'user' } // Default role is 'user'
 });
 const Benutzer = mongoose.model('Benutzer', BenutzerSchema);
 
+// Apartment schema
 const FerienwohnungSchema = new mongoose.Schema({
   name: String,
   ort: String,
   beschreibung: String,
   preis: Number,
-  verfuegbarkeit: Boolean
+  verfuegbarkeit: Boolean,
+  bild: String, // Path to uploaded image
+  lat: Number,
+  lng: Number
 });
 const Ferienwohnung = mongoose.model('Ferienwohnung', FerienwohnungSchema);
 
-// Route: Benutzer registrieren
+// Route: Register user
 app.post('/register', async (req, res) => {
   const { name, email, kennwort } = req.body;
-  const verschluesseltesKennwort = await bcrypt.hash(kennwort, 10);
-  const neuerBenutzer = new Benutzer({ name, email, kennwort: verschluesseltesKennwort });
-  await neuerBenutzer.save();
+  const hashedPassword = await bcrypt.hash(kennwort, 10);
+  const newUser = new Benutzer({ name, email, kennwort: hashedPassword });
+  await newUser.save();
   res.status(201).send("Registrierung erfolgreich");
 });
 
-// Route: Benutzer anmelden
+// Route: Login user
 app.post('/login', async (req, res) => {
   const { email, kennwort } = req.body;
-  const benutzer = await Benutzer.findOne({ email });
+  const user = await Benutzer.findOne({ email });
   
-  if (benutzer && await bcrypt.compare(kennwort, benutzer.kennwort)) {
-    const token = jwt.sign({ userId: benutzer._id, rolle: benutzer.rolle }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.json({ message: "Login erfolgreich", token, rolle: benutzer.rolle });
+  if (user && await bcrypt.compare(kennwort, user.kennwort)) {
+    const token = jwt.sign({ userId: user._id, rolle: user.rolle }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.json({ message: "Login erfolgreich", token, rolle: user.rolle });
   } else {
     res.status(401).send("Ungültige Anmeldeinformationen");
   }
 });
 
-// Middleware: Authentifizierung prüfen
+// Middleware: Authentication check
 function authMiddleware(req, res, next) {
   const token = req.headers['authorization'];
   if (!token) return res.status(401).send('Zugriff verweigert');
@@ -70,72 +89,79 @@ function authMiddleware(req, res, next) {
   }
 }
 
-// Middleware: Admin prüfen
+// Middleware: Admin check
 function adminMiddleware(req, res, next) {
   if (req.user.rolle !== 'admin') return res.status(403).send('Nur Admins dürfen diese Aktion ausführen');
   next();
 }
 
-// Route: Alle Ferienwohnungen anzeigen (ohne Authentifizierung)
+// Route: Fetch all apartments (no authentication needed)
 app.get('/api/ferienwohnungen', async (req, res) => {
   try {
-      const ferienwohnungen = await Ferienwohnung.find();
-      res.json(ferienwohnungen);
-  } catch (err) {
-      res.status(500).json({ message: err.message });
-  }
-});
-
-
-// Route: Neues Inserat (Ferienwohnung) hinzufügen (nur Admins)
-app.post('/api/ferienwohnungen', authMiddleware, adminMiddleware, async (req, res) => {
-  const ferienwohnung = new Ferienwohnung(req.body);
-  try {
-    const neueFerienwohnung = await ferienwohnung.save();
-    res.status(201).json(neueFerienwohnung);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
-
-// Route: Inserat (Ferienwohnung) bearbeiten (nur Admins)
-app.patch('/api/ferienwohnungen/:id', authMiddleware, adminMiddleware, async (req, res) => {
-  try {
-    const ferienwohnung = await Ferienwohnung.findById(req.params.id);
-    if (!ferienwohnung) return res.status(404).json({ message: 'Ferienwohnung nicht gefunden' });
-
-    if (req.body.name != null) ferienwohnung.name = req.body.name;
-    if (req.body.ort != null) ferienwohnung.ort = req.body.ort;
-    if (req.body.beschreibung != null) ferienwohnung.beschreibung = req.body.beschreibung;
-    if (req.body.preis != null) ferienwohnung.preis = req.body.preis;
-    if (req.body.verfuegbarkeit != null) ferienwohnung.verfuegbarkeit = req.body.verfuegbarkeit;
-
-    const aktualisierteFerienwohnung = await ferienwohnung.save();
-    res.json(aktualisierteFerienwohnung);
+    const apartments = await Ferienwohnung.find();
+    res.json(apartments);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// Route: Inserat (Ferienwohnung) löschen (nur Admins)
+// Route: Add new apartment (Admin only)
+app.post('/api/ferienwohnungen', authMiddleware, adminMiddleware, upload.single('bild'), async (req, res) => {
+  const { name, ort, beschreibung, preis, lat, lng } = req.body;
+  const bild = req.file ? req.file.path : null; // Handle image file if uploaded
+  const newApartment = new Ferienwohnung({ name, ort, beschreibung, preis, verfuegbarkeit: true, lat, lng, bild });
+  
+  try {
+    const savedApartment = await newApartment.save();
+    res.status(201).json(savedApartment);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// Route: Edit apartment (Admin only)
+app.patch('/api/ferienwohnungen/:id', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const apartment = await Ferienwohnung.findById(req.params.id);
+    if (!apartment) return res.status(404).json({ message: 'Ferienwohnung nicht gefunden' });
+
+    // Update apartment fields
+    if (req.body.name != null) apartment.name = req.body.name;
+    if (req.body.ort != null) apartment.ort = req.body.ort;
+    if (req.body.beschreibung != null) apartment.beschreibung = req.body.beschreibung;
+    if (req.body.preis != null) apartment.preis = req.body.preis;
+    if (req.body.verfuegbarkeit != null) apartment.verfuegbarkeit = req.body.verfuegbarkeit;
+
+    const updatedApartment = await apartment.save();
+    res.json(updatedApartment);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Route: Delete apartment (Admin only)
 app.delete('/api/ferienwohnungen/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const ferienwohnung = await Ferienwohnung.findById(req.params.id);
-    if (!ferienwohnung) return res.status(404).json({ message: 'Ferienwohnung nicht gefunden' });
+    const apartment = await Ferienwohnung.findById(req.params.id);
+    if (!apartment) return res.status(404).json({ message: 'Ferienwohnung nicht gefunden' });
 
-    await ferienwohnung.remove();
+    await apartment.remove();
     res.json({ message: 'Ferienwohnung gelöscht' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// Route für die Startseite (index.html ausliefern)
+// Route for Google Maps API Key
+app.get('/api/google-maps-key', (req, res) => {
+  res.json({ apiKey: process.env.GOOGLE_MAPS_API_KEY });
+});
+
+// Serve HTML files
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Weitere HTML-Seiten ausliefern
 app.get('/login.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
@@ -156,19 +182,7 @@ app.get('/inserate-bearbeiten.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'inserate-bearbeiten.html'));
 });
 
-// Route: Ferienwohnung hinzufügen (nur Admins)
-app.post('/api/ferienwohnungen', authMiddleware, adminMiddleware, async (req, res) => {
-  const ferienwohnung = new Ferienwohnung(req.body);
-  try {
-      const neueFerienwohnung = await ferienwohnung.save();
-      res.status(201).json(neueFerienwohnung);
-  } catch (err) {
-      res.status(400).json({ message: err.message });
-  }
-});
-
-
-// Server starten
+// Start server
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Server läuft auf Port ${PORT}`);

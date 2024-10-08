@@ -3,10 +3,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize page-specific functionality
     if (page === 'ferienwohnungen') {
-        loadFerienwohnungenFromDB();  // Holt Ferienwohnungen aus der Datenbank
+        loadFerienwohnungenFromDB();  // Load apartments from the database
         initializeSearchFunctionality();
     } else if (page === 'buchung') {
-        loadFerienwohnungenForBooking();  // Holt Ferienwohnungen für die Buchungsseite
+        loadFerienwohnungenForBooking();  // Load apartments for booking
         handlePreselectedApartment();
         setMinDateForBooking();
         document.getElementById('wohnungDropdown').addEventListener('change', function() {
@@ -14,13 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
             updateWohnungDetails(wohnungId);
         });
     } else if (page === 'inserate-bearbeiten') {
-        loadInserateVerwaltung();  // Holt Inserate für Admins
+        loadInserateVerwaltung();  // Load listings for admins
     }
 });
 
-// Ferienwohnungen aus der Datenbank laden und auf der Ferienwohnungsseite anzeigen
+// Load apartments from the database and display them on the apartment page
 function loadFerienwohnungenFromDB() {
-    // Fetch without Authorization for public access
     fetch('/api/ferienwohnungen')
     .then(response => response.json())
     .then(ferienwohnungen => {
@@ -32,7 +31,7 @@ function loadFerienwohnungenFromDB() {
                 <div class="col-md-4">
                     <div class="card mb-4">
                         <div class="img-container">
-                            <img src="${wohnung.bild}" class="card-img-top" alt="${wohnung.name}">
+                            <img src="${wohnung.bild ? '/' + wohnung.bild : 'img/placeholder.png'}" class="card-img-top" alt="${wohnung.name}">
                         </div>
                         <div class="card-body">
                             <h5 class="card-title">${wohnung.name}</h5>
@@ -46,21 +45,21 @@ function loadFerienwohnungenFromDB() {
             `;
             container.innerHTML += card;
         });
+        
 
-        // Karten für die Wohnungen initialisieren
+        // Initialize maps for apartments
         initMapsFerienwohnungen(ferienwohnungen);
     })
     .catch(error => console.error('Fehler beim Laden der Ferienwohnungen:', error));
 }
 
-// Ferienwohnungen aus der Datenbank laden und für die Buchungseite anzeigen
+// Load apartments for the booking page
 function loadFerienwohnungenForBooking() {
-    // Fetch without Authorization for public access
     fetch('/api/ferienwohnungen')
     .then(response => response.json())
     .then(ferienwohnungen => {
         const wohnungDropdown = document.getElementById('wohnungDropdown');
-        wohnungDropdown.innerHTML = `<option value="" selected>Bitte wählen...</option>`; // Reset Dropdown
+        wohnungDropdown.innerHTML = `<option value="" selected>Bitte wählen...</option>`; // Reset dropdown
 
         ferienwohnungen.forEach(wohnung => {
             const option = document.createElement('option');
@@ -72,7 +71,7 @@ function loadFerienwohnungenForBooking() {
     .catch(error => console.error('Fehler beim Laden der Ferienwohnungen:', error));
 }
 
-// Initialize search functionality on the Ferienwohnungen page
+// Initialize search functionality on the apartment page
 function initializeSearchFunctionality() {
     document.getElementById('searchInput').addEventListener('input', function() {
         const searchValue = this.value.toLowerCase();
@@ -101,7 +100,7 @@ function displayFilteredWohnungen(filteredWohnungen) {
                 <div class="col-md-4">
                     <div class="card mb-4">
                         <div class="img-container">
-                            <img src="${wohnung.bild}" class="card-img-top" alt="${wohnung.name}">
+                            <img src="/${wohnung.bild}" class="card-img-top" alt="${wohnung.name}">
                         </div>
                         <div class="card-body">
                             <h5 class="card-title">${wohnung.name}</h5>
@@ -116,19 +115,21 @@ function displayFilteredWohnungen(filteredWohnungen) {
             container.innerHTML += card;
         });
 
-        // Initialize the maps for each apartment
         initMapsFerienwohnungen(filteredWohnungen);
     }
 }
 
-// Karten für die Wohnungen auf der Ferienwohnungsseite initialisieren
+// Initialize maps for apartments
 function initMapsFerienwohnungen(ferienwohnungen) {
     ferienwohnungen.forEach(wohnung => {
-        const map = L.map(`map${wohnung._id}`).setView([wohnung.lat, wohnung.lng], 10);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-        L.marker([wohnung.lat, wohnung.lng]).addTo(map);
+        const map = new google.maps.Map(document.getElementById(`map${wohnung._id}`), {
+            center: { lat: wohnung.lat, lng: wohnung.lng },
+            zoom: 10
+        });
+        new google.maps.Marker({
+            position: { lat: wohnung.lat, lng: wohnung.lng },
+            map: map
+        });
     });
 }
 
@@ -149,12 +150,29 @@ function updateWohnungDetails(wohnungId) {
     .then(wohnung => {
         const wohnungDetails = document.getElementById('wohnungDetails');
         wohnungDetails.innerHTML = `
-            <img src="${wohnung.bild}" class="img-fluid mb-3 small-image" alt="${wohnung.name}">
+            <img src="/${wohnung.bild}" class="img-fluid mb-3 small-image" alt="${wohnung.name}">
             <p><strong>Ort:</strong> ${wohnung.ort}</p>
             <p>${wohnung.beschreibung}</p>
         `;
+        initMapBuchung(wohnung);
     })
     .catch(error => console.error('Fehler beim Laden der Ferienwohnung:', error));
+}
+
+// Initialize the map for the selected apartment on the booking page
+function initMapBuchung(wohnung) {
+    const mapContainer = document.getElementById('mapContainer');
+    mapContainer.style.display = 'block'; // Show the map container
+
+    const map = new google.maps.Map(document.getElementById('map'), {
+        center: { lat: wohnung.lat, lng: wohnung.lng },
+        zoom: 12
+    });
+
+    new google.maps.Marker({
+        position: { lat: wohnung.lat, lng: wohnung.lng },
+        map: map
+    });
 }
 
 // Set the minimum date to today for the check-in and check-out fields
@@ -164,7 +182,7 @@ function setMinDateForBooking() {
     document.getElementById('checkout').setAttribute('min', today);
 }
 
-// Admin functionality: Inserate bearbeiten (mit Authentifizierung)
+// Admin functionality: Load and manage listings (with authentication)
 function loadInserateVerwaltung() {
     fetch('/api/ferienwohnungen', {
         headers: {
@@ -181,7 +199,7 @@ function loadInserateVerwaltung() {
                 <div class="col-md-4">
                     <div class="card mb-4">
                         <div class="img-container">
-                            <img src="${wohnung.bild}" class="card-img-top" alt="${wohnung.name}">
+                            <img src="/${wohnung.bild}" class="card-img-top" alt="${wohnung.name}">
                         </div>
                         <div class="card-body">
                             <h5 class="card-title">${wohnung.name}</h5>
@@ -226,22 +244,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoutNav = document.getElementById('logoutNav');
     const adminNav = document.getElementById('adminNav');
 
-    // Überprüfe, ob ein Authentifizierungstoken vorhanden ist
+    // Check if authentication token exists
     if (authToken) {
         loginNav.style.display = 'none';
         logoutNav.style.display = 'block';
 
-        // Wenn der Benutzer ein Admin ist, zeige den Admin-Link
+        // Show admin link if user is admin
         if (userRole === 'admin') {
             adminNav.style.display = 'block';
         }
     } else {
         loginNav.style.display = 'block';
         logoutNav.style.display = 'none';
-        adminNav.style.display = 'none'; // Admin-Link verstecken, wenn nicht eingeloggt
+        adminNav.style.display = 'none'; // Hide admin link if not logged in
     }
 
-    // Logout-Event
+    // Logout event
     const logoutButton = document.getElementById('logoutButton');
     if (logoutButton) {
         logoutButton.addEventListener('click', function() {
@@ -252,11 +270,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Laden und Verwalten der Inserate
+// Load and manage listings
 document.addEventListener('DOMContentLoaded', () => {
     const inseratForm = document.getElementById('inseratForm');
 
-    // Event-Listener für das Formular zum Hinzufügen neuer Inserate
+    // Event listener for adding new listings
     if (inseratForm) {
         inseratForm.addEventListener('submit', function(event) {
             event.preventDefault();
@@ -265,34 +283,78 @@ document.addEventListener('DOMContentLoaded', () => {
             const ort = document.getElementById('ort').value;
             const beschreibung = document.getElementById('beschreibung').value;
             const preis = document.getElementById('preis').value;
+            const address = document.getElementById('address').value;
 
-            const newInserat = {
-                name: name,
-                ort: ort,
-                beschreibung: beschreibung,
-                preis: preis,
-                verfuegbarkeit: true // Standardwert für Verfügbarkeit
-            };
-
-            // Fetch-Request an die API zum Hinzufügen des Inserats
-            fetch('/api/ferienwohnungen', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}` // Token für Authentifizierung
-                },
-                body: JSON.stringify(newInserat)
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert('Ferienwohnung erfolgreich hinzugefügt');
-                    inseratForm.reset();
-                    loadInserateVerwaltung(); // Die Inserate erneut laden
-                } else {
-                    throw new Error('Fehler beim Hinzufügen der Ferienwohnung');
-                }
-            })
-            .catch(error => console.error('Fehler:', error));
+            // Geocode the address using Google Maps API
+            geocodeAddress(address, function(latLng) {
+                const newInserat = {
+                    name: name,
+                    ort: ort,
+                    beschreibung: beschreibung,
+                    preis: preis,
+                    lat: latLng.lat,
+                    lng: latLng.lng,
+                    verfuegbarkeit: true
+                };
+                
+                // Save the listing with lat/lng values
+                fetch('/api/ferienwohnungen', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify(newInserat)
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Ferienwohnung erfolgreich hinzugefügt');
+                        inseratForm.reset();
+                        loadInserateVerwaltung();
+                    } else {
+                        throw new Error('Fehler beim Hinzufügen der Ferienwohnung');
+                    }
+                })
+                .catch(error => console.error('Fehler:', error));
+            });
         });
     }
 });
+
+// Function to geocode address
+function geocodeAddress(address, callback) {
+    fetch(`/api/google-maps-key`)
+    .then(response => response.json())
+    .then(data => {
+        const apiKey = data.apiKey;
+        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
+        
+        fetch(geocodeUrl)
+        .then(response => response.json())
+        .then(geocodeData => {
+            if (geocodeData.status === 'OK') {
+                const latLng = geocodeData.results[0].geometry.location;
+                callback(latLng);
+            } else {
+                alert('Fehler beim Geocodieren der Adresse');
+            }
+        })
+        .catch(error => console.error('Geocoding error:', error));
+    })
+    .catch(error => console.error('Error fetching Google Maps API key:', error));
+}
+
+// Fetch Google Maps API Key and load the script dynamically
+fetch('/api/google-maps-key')
+    .then(response => response.json())
+    .then(data => {
+        const googleMapsApiKey = data.apiKey;
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&callback=initMap`;
+        document.head.appendChild(script);
+    })
+    .catch(error => console.error('Error loading Google Maps API key:', error));
+
+function initMap() {
+    // This function will be called automatically by the Google Maps API script
+}
