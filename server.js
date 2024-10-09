@@ -27,7 +27,7 @@ const storage = multer.diskStorage({
     cb(null, 'uploads/');
   },
   filename: function(req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname);
+    cb(null, Date.now() + '-' + file.originalname); // Store files with timestamp to avoid conflicts
   }
 });
 const upload = multer({ storage: storage });
@@ -109,6 +109,7 @@ app.get('/api/ferienwohnungen', async (req, res) => {
 app.post('/api/ferienwohnungen', authMiddleware, adminMiddleware, upload.single('bild'), async (req, res) => {
   const { name, ort, beschreibung, preis, lat, lng } = req.body;
   const bild = req.file ? req.file.path : null; // Handle image file if uploaded
+  console.log('Uploaded File:', req.file); // Log file details for debugging
   const newApartment = new Ferienwohnung({ name, ort, beschreibung, preis, verfuegbarkeit: true, lat, lng, bild });
   
   try {

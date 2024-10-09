@@ -21,37 +21,37 @@ document.addEventListener('DOMContentLoaded', () => {
 // Load apartments from the database and display them on the apartment page
 function loadFerienwohnungenFromDB() {
     fetch('/api/ferienwohnungen')
-    .then(response => response.json())
-    .then(ferienwohnungen => {
-        const container = document.getElementById('ferienwohnungen-container');
-        container.innerHTML = '';
+        .then(response => response.json())
+        .then(ferienwohnungen => {
+            const container = document.getElementById('ferienwohnungen-container');
+            container.innerHTML = '';
 
-        ferienwohnungen.forEach(wohnung => {
-            const card = `
-                <div class="col-md-4">
-                    <div class="card mb-4">
-                        <div class="img-container">
-                            <img src="${wohnung.bild ? '/' + wohnung.bild : 'img/placeholder.png'}" class="card-img-top" alt="${wohnung.name}">
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">${wohnung.name}</h5>
-                            <p class="card-text">${wohnung.beschreibung}</p>
-                            <p class="card-text"><strong>Ort:</strong> ${wohnung.ort}</p>
-                            <div id="map${wohnung._id}" style="height: 200px; width: 100%;"></div>
-                            <a href="buchung.html?id=${wohnung._id}" class="btn btn-primary w-100 mt-3">Jetzt buchen</a>
+            ferienwohnungen.forEach(wohnung => {
+                const card = `
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="img-container">
+                                <img src="${wohnung.bild ? '/' + wohnung.bild : 'img/placeholder.png'}" class="card-img-top" alt="${wohnung.name}">
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">${wohnung.name}</h5>
+                                <p class="card-text">${wohnung.beschreibung}</p>
+                                <p class="card-text"><strong>Ort:</strong> ${wohnung.ort}</p>
+                                <div id="map${wohnung._id}" style="height: 200px; width: 100%;"></div>
+                                <a href="buchung.html?id=${wohnung._id}" class="btn btn-primary w-100 mt-3">Jetzt buchen</a>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `;
-            container.innerHTML += card;
-        });
-        
+                `;
+                container.innerHTML += card;
+            });
 
-        // Initialize maps for apartments
-        initMapsFerienwohnungen(ferienwohnungen);
-    })
-    .catch(error => console.error('Fehler beim Laden der Ferienwohnungen:', error));
+            // Initialize maps for apartments
+            initMapsFerienwohnungen(ferienwohnungen);
+        })
+        .catch(error => console.error('Fehler beim Laden der Ferienwohnungen:', error));
 }
+
 
 // Load apartments for the booking page
 function loadFerienwohnungenForBooking() {
@@ -122,14 +122,18 @@ function displayFilteredWohnungen(filteredWohnungen) {
 // Initialize maps for apartments
 function initMapsFerienwohnungen(ferienwohnungen) {
     ferienwohnungen.forEach(wohnung => {
-        const map = new google.maps.Map(document.getElementById(`map${wohnung._id}`), {
-            center: { lat: wohnung.lat, lng: wohnung.lng },
-            zoom: 10
-        });
-        new google.maps.Marker({
-            position: { lat: wohnung.lat, lng: wohnung.lng },
-            map: map
-        });
+        if (wohnung.lat && wohnung.lng) {  // Ensure lat/lng exist
+            const map = new google.maps.Map(document.getElementById(`map${wohnung._id}`), {
+                center: { lat: wohnung.lat, lng: wohnung.lng },
+                zoom: 10
+            });
+            new google.maps.Marker({
+                position: { lat: wohnung.lat, lng: wohnung.lng },
+                map: map
+            });
+        } else {
+            console.error(`Missing lat/lng for ${wohnung.name}`);
+        }
     });
 }
 
@@ -242,30 +246,33 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const loginNav = document.getElementById('loginNav');
     const logoutNav = document.getElementById('logoutNav');
-    const adminNav = document.getElementById('adminNav');
+    const profileLink = document.getElementById('profileLink');
+    const adminNav = document.getElementById('adminNav');  // Admin-Link
 
-    // Check if authentication token exists
+    // Überprüfe, ob das Authentifizierungs-Token vorhanden ist
     if (authToken) {
-        loginNav.style.display = 'none';
-        logoutNav.style.display = 'block';
+        loginNav.style.display = 'none';  // Verstecke den Login-Link
+        logoutNav.style.display = 'block'; // Zeige den Logout-Link
+        profileLink.style.display = 'block'; // Zeige den Profil-Link
 
-        // Show admin link if user is admin
+        // Zeige den Admin-Link nur, wenn die Rolle 'admin' ist
         if (userRole === 'admin') {
             adminNav.style.display = 'block';
         }
     } else {
-        loginNav.style.display = 'block';
-        logoutNav.style.display = 'none';
-        adminNav.style.display = 'none'; // Hide admin link if not logged in
+        loginNav.style.display = 'block';  // Zeige den Login-Link
+        logoutNav.style.display = 'none';  // Verstecke den Logout-Link
+        profileLink.style.display = 'none';  // Verstecke den Profil-Link
+        adminNav.style.display = 'none';  // Verstecke den Admin-Link
     }
 
-    // Logout event
+    // Logout-Event
     const logoutButton = document.getElementById('logoutButton');
     if (logoutButton) {
         logoutButton.addEventListener('click', function() {
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('userRole');
-            window.location.href = 'index.html';
+            localStorage.removeItem('authToken');  // Entferne Token
+            localStorage.removeItem('userRole');   // Entferne User-Rolle
+            window.location.href = 'index.html';   // Umleiten nach Logout
         });
     }
 });
@@ -356,5 +363,5 @@ fetch('/api/google-maps-key')
     .catch(error => console.error('Error loading Google Maps API key:', error));
 
 function initMap() {
-    // This function will be called automatically by the Google Maps API script
+    // This function will be called automatically by Google Maps API script
 }
