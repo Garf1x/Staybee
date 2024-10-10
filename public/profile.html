@@ -24,7 +24,7 @@
                 <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
                 <li class="nav-item"><a class="nav-link" href="ferienwohnungen.html">Ferienwohnungen</a></li>
                 <li class="nav-item"><a class="nav-link" href="buchung.html">Buchung</a></li>
-                <li class="nav-item" id="profileLink" style="display: none;"><a class="nav-link" href="profile.html">Profil</a></li> <!-- Profil Link -->
+                <li class="nav-item" id="profileLink"><a class="nav-link" href="profile.html">Profil</a></li> <!-- Profil Link -->
                 <li class="nav-item" id="adminNav" style="display: none;"><a class="nav-link" href="inserate-bearbeiten.html">Inserate Bearbeiten</a></li> <!-- Admin-Link -->
                 <li class="nav-item" id="loginNav"><a class="nav-link" href="login.html">Login</a></li> <!-- Login Link -->
                 <li class="nav-item" id="logoutNav" style="display:none;"><a class="nav-link" href="#" id="logoutButton">Logout</a></li> <!-- Logout Link -->
@@ -32,6 +32,7 @@
         </div>
     </div>
 </nav>
+
 
     <!-- Profil Section -->
     <section class="py-5" style="background-color: #f9f9f9;">
@@ -42,26 +43,27 @@
                         <div class="card-body">
                             <h2 class="text-center mb-4">Ihr Profil</h2>
                             <form id="profileForm" class="row g-3">
-                                <div class="col-12">
-                                    <label for="profileName" class="form-label">Ihr Name</label>
-                                    <input type="text" class="form-control" id="profileName" value="Max Mustermann" required>
+                                <div class="col-md-12">
+                                    <label for="name" class="form-label">Ihr Name</label>
+                                    <input type="text" class="form-control" id="name" required>
                                 </div>
-                                <div class="col-12">
-                                    <label for="profileEmail" class="form-label">Ihre E-Mail</label>
-                                    <input type="email" class="form-control" id="profileEmail" value="max@example.com" required>
+                                <div class="col-md-12">
+                                    <label for="email" class="form-label">Ihre E-Mail</label>
+                                    <input type="email" class="form-control" id="email" required>
                                 </div>
-                                <div class="col-12">
-                                    <label for="profilePassword" class="form-label">Neues Passwort</label>
-                                    <input type="password" class="form-control" id="profilePassword" placeholder="Neues Passwort eingeben">
+                                <div class="col-md-12">
+                                    <label for="password" class="form-label">Neues Passwort</label>
+                                    <input type="password" class="form-control" id="password">
                                 </div>
-                                <div class="col-12">
-                                    <label for="passwordConfirm" class="form-label">Passwort bestätigen</label>
-                                    <input type="password" class="form-control" id="passwordConfirm" placeholder="Passwort bestätigen">
+                                <div class="col-md-12">
+                                    <label for="confirmPassword" class="form-label">Passwort bestätigen</label>
+                                    <input type="password" class="form-control" id="confirmPassword">
                                 </div>
-                                <div class="col-12">
+                                <div class="col-12 text-center">
                                     <button type="submit" class="btn btn-primary w-100">Änderungen speichern</button>
                                 </div>
                             </form>
+                            
                         </div>
                     </div>
                 </div>

@@ -21,12 +21,17 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB verbunden'))
   .catch(err => console.error('Fehler bei der MongoDB-Verbindung:', err));
 
+// Function to normalize file paths
+function normalizePath(filePath) {
+  return filePath.replace(/\\/g, '/'); // Replace backslashes with forward slashes
+}
+
 // Configure multer for image uploads
 const storage = multer.diskStorage({
-  destination: function(req, file, cb) {
+  destination: function (req, file, cb) {
     cb(null, 'uploads/'); // Set upload destination
   },
-  filename: function(req, file, cb) {
+  filename: function (req, file, cb) {
     cb(null, Date.now() + '-' + file.originalname); // Rename files with timestamp
   }
 });
@@ -67,7 +72,7 @@ app.post('/register', async (req, res) => {
 app.post('/login', async (req, res) => {
   const { email, kennwort } = req.body;
   const user = await Benutzer.findOne({ email });
-  
+
   if (user && await bcrypt.compare(kennwort, user.kennwort)) {
     const token = jwt.sign({ userId: user._id, rolle: user.rolle }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.json({ message: "Login erfolgreich", token, rolle: user.rolle });
@@ -95,10 +100,37 @@ function adminMiddleware(req, res, next) {
   next();
 }
 
+// Route to get user profile
+app.get('/api/profil', authMiddleware, (req, res) => {
+  Benutzer.findById(req.user.userId)
+    .then(user => {
+      if (!user) {
+        return res.status(404).json({ message: 'Benutzer nicht gefunden' });
+      }
+      res.json({ name: user.name, email: user.email });
+    })
+    .catch(err => res.status(500).json({ message: 'Serverfehler' }));
+});
+
+// Function to normalize paths
+function normalizePath(path) {
+  return path.replace(/\\/g, '/'); // Replace all backslashes with forward slashes
+}
+
 // Route to get all apartments
 app.get('/api/ferienwohnungen', async (req, res) => {
   try {
     const apartments = await Ferienwohnung.find();
+
+    
+    
+    // Normalize the image paths before sending the response
+    apartments.forEach(apartment => {
+      if (apartment.bild) {
+        apartment.bild = normalizePath(apartment.bild); // Ensure all backslashes are replaced
+      }
+    });
+    
     res.json(apartments);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -108,9 +140,9 @@ app.get('/api/ferienwohnungen', async (req, res) => {
 // Route to add new apartment (Admin only)
 app.post('/api/ferienwohnungen', authMiddleware, adminMiddleware, upload.single('bild'), async (req, res) => {
   const { name, ort, beschreibung, preis, lat, lng } = req.body;
-  const bild = req.file ? req.file.path : null; // Get uploaded image path
+  const bild = req.file ? normalizePath(req.file.path) : null; // Normalize the image path
   const newApartment = new Ferienwohnung({ name, ort, beschreibung, preis, verfuegbarkeit: true, lat, lng, bild });
-  
+
   try {
     const savedApartment = await newApartment.save();
     res.status(201).json(savedApartment);
@@ -179,6 +211,10 @@ app.get('/buchung.html', (req, res) => {
 
 app.get('/inserate-bearbeiten.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'inserate-bearbeiten.html'));
+});
+// Serve the map page
+app.get('/map.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'map.html'));
 });
 
 // Start the server
