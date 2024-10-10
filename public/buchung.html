@@ -48,13 +48,19 @@
                 </select>
             </div>
 
+
+            <div id="wohnungDetails">
+    <!-- Das Bild und die Details der Ferienwohnung werden hier dynamisch geladen -->
+</div>
+
+
             <!-- Details der ausgewählten Ferienwohnung -->
             <div id="wohnungDetails" class="text-center">
                 <!-- Ferienwohnung-Details werden hier angezeigt -->
 
                 <!-- Karte der ausgewählten Ferienwohnung (wird dynamisch geladen) -->
                 <div id="mapContainer" style="display: none;">
-                    <div id="map" style="height: 200px; width: 100%;"></div>
+                    <div id="map{{wohnung._id}}" style="height: 200px; width: 100%;"></div>
                 </div>
             </div>
 
@@ -117,3 +123,4 @@
     <script src="script.js"></script>
 </body>
 </html>
+

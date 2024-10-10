@@ -4,15 +4,15 @@ const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-const multer = require('multer'); // To handle file uploads
-const path = require('path'); // For serving static files
+const multer = require('multer'); // Handling file uploads
+const path = require('path'); // To serve static files
 require('dotenv').config(); // Load environment variables
 
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-// Static files (CSS, JS, Images, HTML)
+// Serve static files (CSS, JS, Images)
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static('uploads')); // Serve uploaded images
 
@@ -21,13 +21,13 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB verbunden'))
   .catch(err => console.error('Fehler bei der MongoDB-Verbindung:', err));
 
-// Multer storage configuration for image uploads
+// Configure multer for image uploads
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
-    cb(null, 'uploads/');
+    cb(null, 'uploads/'); // Set upload destination
   },
   filename: function(req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname); // Store files with timestamp to avoid conflicts
+    cb(null, Date.now() + '-' + file.originalname); // Rename files with timestamp
   }
 });
 const upload = multer({ storage: storage });
@@ -37,7 +37,7 @@ const BenutzerSchema = new mongoose.Schema({
   name: String,
   email: String,
   kennwort: String,
-  rolle: { type: String, default: 'user' } // Default role is 'user'
+  rolle: { type: String, default: 'user' } // Default to 'user'
 });
 const Benutzer = mongoose.model('Benutzer', BenutzerSchema);
 
@@ -48,13 +48,13 @@ const FerienwohnungSchema = new mongoose.Schema({
   beschreibung: String,
   preis: Number,
   verfuegbarkeit: Boolean,
-  bild: String, // Path to uploaded image
+  bild: String, // Store image path
   lat: Number,
   lng: Number
 });
 const Ferienwohnung = mongoose.model('Ferienwohnung', FerienwohnungSchema);
 
-// Route: Register user
+// Register route
 app.post('/register', async (req, res) => {
   const { name, email, kennwort } = req.body;
   const hashedPassword = await bcrypt.hash(kennwort, 10);
@@ -63,7 +63,7 @@ app.post('/register', async (req, res) => {
   res.status(201).send("Registrierung erfolgreich");
 });
 
-// Route: Login user
+// Login route
 app.post('/login', async (req, res) => {
   const { email, kennwort } = req.body;
   const user = await Benutzer.findOne({ email });
@@ -76,7 +76,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Middleware: Authentication check
+// Middleware for authentication check
 function authMiddleware(req, res, next) {
   const token = req.headers['authorization'];
   if (!token) return res.status(401).send('Zugriff verweigert');
@@ -89,13 +89,13 @@ function authMiddleware(req, res, next) {
   }
 }
 
-// Middleware: Admin check
+// Middleware for admin check
 function adminMiddleware(req, res, next) {
   if (req.user.rolle !== 'admin') return res.status(403).send('Nur Admins dürfen diese Aktion ausführen');
   next();
 }
 
-// Route: Fetch all apartments (no authentication needed)
+// Route to get all apartments
 app.get('/api/ferienwohnungen', async (req, res) => {
   try {
     const apartments = await Ferienwohnung.find();
@@ -105,11 +105,10 @@ app.get('/api/ferienwohnungen', async (req, res) => {
   }
 });
 
-// Route: Add new apartment (Admin only)
+// Route to add new apartment (Admin only)
 app.post('/api/ferienwohnungen', authMiddleware, adminMiddleware, upload.single('bild'), async (req, res) => {
   const { name, ort, beschreibung, preis, lat, lng } = req.body;
-  const bild = req.file ? req.file.path : null; // Handle image file if uploaded
-  console.log('Uploaded File:', req.file); // Log file details for debugging
+  const bild = req.file ? req.file.path : null; // Get uploaded image path
   const newApartment = new Ferienwohnung({ name, ort, beschreibung, preis, verfuegbarkeit: true, lat, lng, bild });
   
   try {
@@ -120,13 +119,12 @@ app.post('/api/ferienwohnungen', authMiddleware, adminMiddleware, upload.single(
   }
 });
 
-// Route: Edit apartment (Admin only)
+// Edit apartment route (Admin only)
 app.patch('/api/ferienwohnungen/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const apartment = await Ferienwohnung.findById(req.params.id);
     if (!apartment) return res.status(404).json({ message: 'Ferienwohnung nicht gefunden' });
 
-    // Update apartment fields
     if (req.body.name != null) apartment.name = req.body.name;
     if (req.body.ort != null) apartment.ort = req.body.ort;
     if (req.body.beschreibung != null) apartment.beschreibung = req.body.beschreibung;
@@ -140,7 +138,7 @@ app.patch('/api/ferienwohnungen/:id', authMiddleware, adminMiddleware, async (re
   }
 });
 
-// Route: Delete apartment (Admin only)
+// Delete apartment route (Admin only)
 app.delete('/api/ferienwohnungen/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const apartment = await Ferienwohnung.findById(req.params.id);
@@ -158,7 +156,7 @@ app.get('/api/google-maps-key', (req, res) => {
   res.json({ apiKey: process.env.GOOGLE_MAPS_API_KEY });
 });
 
-// Serve HTML files
+// Serve HTML pages
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -183,7 +181,7 @@ app.get('/inserate-bearbeiten.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'inserate-bearbeiten.html'));
 });
 
-// Start server
+// Start the server
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Server läuft auf Port ${PORT}`);
