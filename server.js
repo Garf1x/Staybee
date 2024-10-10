@@ -128,6 +128,7 @@ async function geocodeAddress(address) {
       console.log('Geocoded address:', location); // Log the location to confirm it's correct
       return { lat: location.lat, lng: location.lng };
     } else {
+      console.error(`Geocoding failed: ${data.status} - ${data.error_message}`);
       throw new Error(`Geocoding failed: ${data.status} - ${data.error_message}`);
     }
   } catch (error) {
@@ -156,14 +157,20 @@ app.get('/api/ferienwohnungen', async (req, res) => {
 
 // Route to add new apartment (Admin only)
 app.post('/api/ferienwohnungen', authMiddleware, adminMiddleware, upload.single('bild'), async (req, res) => {
-  const { name, ort, adresse, beschreibung, preis } = req.body;
+  const { name, ort, address, beschreibung, preis } = req.body; // Ändern Sie 'adresse' zu 'address'
   const bild = req.file ? normalizePath(req.file.path) : null;
 
-  try {
-    // Geocode the address to get lat and lng
-    const { lat, lng } = await geocodeAddress(adresse);
+  // Log the entire request body to debug the issue
+  console.log('Request body:', req.body);
 
-    const newApartment = new Ferienwohnung({ name, ort, adresse, beschreibung, preis, verfuegbarkeit: true, lat, lng, bild });
+  try {
+    // Log the address to be geocoded
+    console.log('Geocoding address:', address); // Ändern Sie 'adresse' zu 'address'
+
+    // Geocode the address to get lat and lng
+    const { lat, lng } = await geocodeAddress(address); // Ändern Sie 'adresse' zu 'address'
+
+    const newApartment = new Ferienwohnung({ name, ort, adresse: address, beschreibung, preis, verfuegbarkeit: true, lat, lng, bild });
     const savedApartment = await newApartment.save();
     res.status(201).json(savedApartment);
   } catch (err) {
@@ -222,7 +229,7 @@ app.get('/register.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'register.html'));
 });
 
-app.get('/ferienwohnungen.html', (req, res) => {
+app.get('/ferienwohnungen', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'ferienwohnungen.html'));
 });
 

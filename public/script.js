@@ -48,12 +48,7 @@ async function loadFerienwohnungenFromDB() {
 function initMapsFerienwohnungen(ferienwohnungen) {
     ferienwohnungen.forEach(wohnung => {
         const mapContainer = document.getElementById(`map${wohnung._id}`);
-        if (!wohnung.lat || !wohnung.lng) {
-            console.error(`Missing coordinates for: ${wohnung.name}`);
-            return;
-        }
-
-        if (mapContainer) {
+        if (mapContainer && wohnung.lat && wohnung.lng) {
             const map = new google.maps.Map(mapContainer, {
                 center: { lat: parseFloat(wohnung.lat), lng: parseFloat(wohnung.lng) },
                 zoom: 12
@@ -63,8 +58,6 @@ function initMapsFerienwohnungen(ferienwohnungen) {
                 map: map,
                 title: wohnung.name
             });
-        } else {
-            console.error(`Map container not found for: ${wohnung.name}`);
         }
     });
 }
@@ -88,6 +81,8 @@ function initializeMaps() {
         console.error('initMapsFerienwohnungen function not found.');
     }
 }
+
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const page = document.body.getAttribute('data-page');
@@ -149,7 +144,7 @@ function initializeSearchFunctionality() {
             console.error('Fehler beim Laden der Ferienwohnungen:', error);
         }
     });
-}
+} 
 
 // Display filtered apartments based on the search input
 function displayFilteredWohnungen(filteredWohnungen) {
@@ -228,7 +223,7 @@ function updateWohnungDetails(wohnungId) {
             <p><strong>Ort:</strong> ${wohnung.ort}</p>
             <p>${wohnung.beschreibung}</p>
         `;
-
+        
         const wohnungBilder = document.getElementById('wohnungBilder');
         wohnungBilder.innerHTML = '';  // Clear any previous images
         if (wohnung.bilder && wohnung.bilder.length > 0) {
@@ -362,12 +357,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     inseratForm.reset();
                     loadInserateVerwaltung();
                 } else {
-                    throw new Error('Fehler beim Hinzufügen der Ferienwohnung');
+                    const errorData = await response.json();
+                    throw new Error(`Fehler beim Hinzufügen der Ferienwohnung: ${errorData.message}`);
                 }
             } catch (error) {
                 console.error('Fehler:', error);
+                alert(`Fehler: ${error.message}`);
             }
         });
     }
 });
-
