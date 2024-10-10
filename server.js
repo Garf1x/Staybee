@@ -6,6 +6,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const multer = require('multer'); // Handling file uploads
 const path = require('path'); // To serve static files
+const fetch = require('node-fetch'); // To make API requests
 require('dotenv').config(); // Load environment variables
 
 const app = express();
@@ -50,6 +51,7 @@ const Benutzer = mongoose.model('Benutzer', BenutzerSchema);
 const FerienwohnungSchema = new mongoose.Schema({
   name: String,
   ort: String,
+  adresse: String, // New field for address
   beschreibung: String,
   preis: Number,
   verfuegbarkeit: Boolean,
@@ -112,9 +114,26 @@ app.get('/api/profil', authMiddleware, (req, res) => {
     .catch(err => res.status(500).json({ message: 'Serverfehler' }));
 });
 
-// Function to normalize paths
-function normalizePath(path) {
-  return path.replace(/\\/g, '/'); // Replace all backslashes with forward slashes
+// Function to geocode address and get latitude and longitude
+async function geocodeAddress(address) {
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
+
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.status === 'OK' && data.results.length > 0) {
+      const location = data.results[0].geometry.location;
+      console.log('Geocoded address:', location); // Log the location to confirm it's correct
+      return { lat: location.lat, lng: location.lng };
+    } else {
+      throw new Error(`Geocoding failed: ${data.status} - ${data.error_message}`);
+    }
+  } catch (error) {
+    console.error('Error fetching Geocoding data:', error);
+    throw new Error('Failed to geocode address');
+  }
 }
 
 // Route to get all apartments
@@ -122,15 +141,13 @@ app.get('/api/ferienwohnungen', async (req, res) => {
   try {
     const apartments = await Ferienwohnung.find();
 
-    
-    
     // Normalize the image paths before sending the response
     apartments.forEach(apartment => {
       if (apartment.bild) {
         apartment.bild = normalizePath(apartment.bild); // Ensure all backslashes are replaced
       }
     });
-    
+
     res.json(apartments);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -139,15 +156,19 @@ app.get('/api/ferienwohnungen', async (req, res) => {
 
 // Route to add new apartment (Admin only)
 app.post('/api/ferienwohnungen', authMiddleware, adminMiddleware, upload.single('bild'), async (req, res) => {
-  const { name, ort, beschreibung, preis, lat, lng } = req.body;
-  const bild = req.file ? normalizePath(req.file.path) : null; // Normalize the image path
-  const newApartment = new Ferienwohnung({ name, ort, beschreibung, preis, verfuegbarkeit: true, lat, lng, bild });
+  const { name, ort, adresse, beschreibung, preis } = req.body;
+  const bild = req.file ? normalizePath(req.file.path) : null;
 
   try {
+    // Geocode the address to get lat and lng
+    const { lat, lng } = await geocodeAddress(adresse);
+
+    const newApartment = new Ferienwohnung({ name, ort, adresse, beschreibung, preis, verfuegbarkeit: true, lat, lng, bild });
     const savedApartment = await newApartment.save();
     res.status(201).json(savedApartment);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    console.error(err);
+    res.status(400).json({ message: 'Fehler beim Hinzufügen der Ferienwohnung' });
   }
 });
 
@@ -212,6 +233,7 @@ app.get('/buchung.html', (req, res) => {
 app.get('/inserate-bearbeiten.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'inserate-bearbeiten.html'));
 });
+
 // Serve the map page
 app.get('/map.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'map.html'));
