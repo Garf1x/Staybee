@@ -74,37 +74,7 @@
     <script src="script.js"></script>
     <!-- Skript für Login -->
     <script>
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const data = {
-                email: document.getElementById('email').value,
-                kennwort: document.getElementById('password').value
-            };
-
-            try {
-                const response = await fetch('/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    localStorage.setItem('authToken', result.token); // Speichert das JWT im LocalStorage
-                    localStorage.setItem('userRole', result.rolle);  // Speichert die Benutzerrolle (admin/user)
-
-                    alert('Login erfolgreich');
-                    window.location.href = 'index.html'; // Weiterleitung zur Startseite nach erfolgreichem Login
-                } else {
-                    const error = await response.json();
-                    alert('Fehler beim Login: ' + error.message);
-                }
-            } catch (error) {
-                console.error('Fehler beim Login:', error);
-                alert('Ein Fehler ist aufgetreten, bitte versuchen Sie es erneut.');
-            }
-        });
+ 
     </script>
 </body>
 </html>

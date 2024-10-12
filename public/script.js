@@ -76,6 +76,37 @@ document.addEventListener('DOMContentLoaded', () => {
         loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             // Login-Logik hier
+            document.getElementById('loginForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+    
+                const data = {
+                    email: document.getElementById('email').value,
+                    kennwort: document.getElementById('password').value
+                };
+    
+                try {
+                    const response = await fetch('/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+    
+                    if (response.ok) {
+                        const result = await response.json();
+                        localStorage.setItem('authToken', result.token); // Speichert das JWT im LocalStorage
+                        localStorage.setItem('userRole', result.rolle);  // Speichert die Benutzerrolle (admin/user)
+    
+                        alert('Login erfolgreich');
+                        window.location.href = 'index.html'; // Weiterleitung zur Startseite nach erfolgreichem Login
+                    } else {
+                        const error = await response.json();
+                        alert('Fehler beim Login: ' + error.message);
+                    }
+                } catch (error) {
+                    console.error('Fehler beim Login:', error);
+                    alert('Ein Fehler ist aufgetreten, bitte versuchen Sie es erneut.');
+                }
+            });
         });
     }
 
@@ -150,7 +181,7 @@ async function loadFerienwohnungenFromDB() {
             container.innerHTML += card;
         });
 
-        // Initialize maps for each apartment
+        // Map initialisieren für jedes Apartment
         initMapsFerienwohnungen(ferienwohnungen);
 
     } catch (error) {
@@ -158,7 +189,7 @@ async function loadFerienwohnungenFromDB() {
     }
 }
 
-// Initialize the map for each apartment
+// Map initialisieren für jedes Apartment
 function initMapsFerienwohnungen(ferienwohnungen) {
     ferienwohnungen.forEach(wohnung => {
         const mapContainer = document.getElementById(`map${wohnung._id}`);
@@ -176,7 +207,7 @@ function initMapsFerienwohnungen(ferienwohnungen) {
     });
 }
 
-// Fetch the Google Maps API key and load the script
+// Hole den Google Maps API-Schlüssel und lade das Skript
 fetch('/api/google-maps-key')
     .then(response => response.json())
     .then(data => {
@@ -201,7 +232,7 @@ function initializeMaps() {
 document.addEventListener('DOMContentLoaded', () => {
     const page = document.body.getAttribute('data-page');
 
-    // Initialize page-specific functionality
+    // Initialisiere seiten-spezifische Funktionalitäten
     switch (page) {
         case 'ferienwohnungen':
             loadFerienwohnungenFromDB();
@@ -222,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Load apartments for the booking page
+// Lade Ferienwohnungen für die Buchungsseite
 async function loadFerienwohnungenForBooking() {
     try {
         const response = await fetch('/api/ferienwohnungen');
@@ -237,13 +268,13 @@ async function loadFerienwohnungenForBooking() {
             wohnungDropdown.appendChild(option);
         });
 
-        handlePreselectedApartment(); // Ensure preselected apartment is handled after loading
+        handlePreselectedApartment(); // Sicherstellen, dass die vorausgewählte Wohnung nach dem Laden richtig ausgewählt ist
     } catch (error) {
         console.error('Fehler beim Laden der Ferienwohnungen:', error);
     }
 }
 
-// Initialize search functionality on the apartment page
+// Suchfunktionalität auf der Apartmentseite initialisieren
 function initializeSearchFunctionality() {
     document.getElementById('searchInput').addEventListener('input', async function() {
         const searchValue = this.value.toLowerCase();
@@ -260,7 +291,7 @@ function initializeSearchFunctionality() {
     });
 } 
 
-// Display filtered apartments based on the search input
+// Zeige gefilterte Ferienwohnungen basierend auf der Sucheingabe an
 function displayFilteredWohnungen(filteredWohnungen) {
     const container = document.getElementById('ferienwohnungen-container');
     container.innerHTML = '';
@@ -293,7 +324,7 @@ function displayFilteredWohnungen(filteredWohnungen) {
     }
 }
 
-// Initialize the map for the selected apartment on the booking page
+// Initialisiere die Karte für die ausgewählte Wohnung auf der Buchungsseite
 function initMapBuchung(wohnung) {
     const mapContainer = document.getElementById('mapContainer');
     if (mapContainer && wohnung.lat && wohnung.lng) {
@@ -311,22 +342,22 @@ function initMapBuchung(wohnung) {
     }
 }
 
-// Handle preselection of apartment for the booking form
+// Bearbeite die Vorauswahl der Wohnung für das Buchungsformular
 function handlePreselectedApartment() {
     const urlParams = new URLSearchParams(window.location.search);
     const selectedWohnungId = urlParams.get('id');
     if (selectedWohnungId) {
         const wohnungDropdown = document.getElementById('wohnungDropdown');
 
-        // Wait until apartments are loaded into the dropdown
+        // Warten, bis die Wohnungen in das Dropdown geladen sind
         setTimeout(() => {
             wohnungDropdown.value = selectedWohnungId;
             updateWohnungDetails(selectedWohnungId);
-        }, 500); // Slight delay to ensure dropdown is populated
+        }, 100); // Leichte Verzögerung, um sicherzustellen, dass das Dropdown-Menü gefüllt ist
     }
 }
 
-// Update the selected apartment details on the booking page
+// Aktualisiere die Details der ausgewählten Wohnung auf der Buchungsseite
 function updateWohnungDetails(wohnungId) {
     fetch(`/api/ferienwohnungen/${wohnungId}`)
     .then(response => response.json())
@@ -339,7 +370,7 @@ function updateWohnungDetails(wohnungId) {
         `;
         
         const wohnungBilder = document.getElementById('wohnungBilder');
-        wohnungBilder.innerHTML = '';  // Clear any previous images
+        wohnungBilder.innerHTML = '';  // Lösche alle vorherigen Bilder
         if (wohnung.bilder && wohnung.bilder.length > 0) {
             wohnung.bilder.forEach(bild => {
                 const imgElement = document.createElement('img');
@@ -352,7 +383,7 @@ function updateWohnungDetails(wohnungId) {
     .catch(error => console.error('Fehler beim Laden der Ferienwohnung:', error));
 }
 
-// Admin functionality: Load and manage listings (with authentication)
+// Admin funktion: Ferienwohnungen laden und managen
 async function loadInserateVerwaltung() {
     try {
         const response = await fetch('/api/ferienwohnungen', {
@@ -388,7 +419,7 @@ async function loadInserateVerwaltung() {
     }
 }
 
-// Delete listing function
+// Ferienwohnungen löschen
 window.deleteInserat = async function(id) {
     try {
         const response = await fetch(`/api/ferienwohnungen/${id}`, {
@@ -408,12 +439,12 @@ window.deleteInserat = async function(id) {
     }
 }
 
-// Placeholder function for editing listing
+// Platzhalterfunktion zum Bearbeiten eines Inserats
 window.editInserat = function(id) {
     alert(`Inserat ${id} bearbeiten`);
 }
 
-// Handle authentication and navigation visibility
+// Authentifizierung und Navigation Sichtbarkeit handhaben
 document.addEventListener('DOMContentLoaded', () => {
     const authToken = localStorage.getItem('authToken');
     const userRole = localStorage.getItem('userRole');
@@ -494,7 +525,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Add and submit new listing
+// Hinzufügen und Absenden eines neuen Inserats
 document.addEventListener('DOMContentLoaded', () => {
     const inseratForm = document.getElementById('inseratForm');
 
@@ -568,7 +599,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dateInput) {
         const today = new Date();
         const day = String(today.getDate()).padStart(2, '0');
-        const month = String(today.getMonth() + 1).padStart(2, '0'); // Januar ist 0!
+        const month = String(today.getMonth() + 1).padStart(2, '0'); // Januar ist 0
         const year = today.getFullYear();
         
         const todayFormatted = year + '-' + month + '-' + day;
@@ -594,7 +625,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dateInput) {
         const today = new Date();
         const day = String(today.getDate()).padStart(2, '0');
-        const month = String(today.getMonth() + 1).padStart(2, '0'); // Januar ist 0!
+        const month = String(today.getMonth() + 1).padStart(2, '0'); // Januar ist 0
         const year = today.getFullYear();
         
         const todayFormatted = year + '-' + month + '-' + day;
@@ -612,11 +643,11 @@ async function loadWohnungDetails() {
             const response = await fetch(`/api/ferienwohnungen/${wohnungId}`);
             const wohnung = await response.json();
 
-            // Update the image
+            // Update das Bild
             const wohnungBild = document.getElementById('wohnung-bild');
             wohnungBild.src = wohnung.bild ? '/' + wohnung.bild : 'img/placeholder.png';
 
-            // Initialize the map
+            // Karte initialisieren
             initializeMap(wohnung._id, wohnung.lat, wohnung.lng);
         } catch (error) {
             console.error('Error loading wohnung details:', error);
@@ -689,7 +720,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dateInput) {
         const today = new Date();
         const day = String(today.getDate()).padStart(2, '0');
-        const month = String(today.getMonth() + 1).padStart(2, '0'); // Januar ist 0!
+        const month = String(today.getMonth() + 1).padStart(2, '0'); // Januar ist 0
         const year = today.getFullYear();
         
         const todayFormatted = year + '-' + month + '-' + day;
@@ -712,7 +743,7 @@ async function loadFerienwohnungenForBooking() {
             wohnungDropdown.appendChild(option);
         });
 
-        handlePreselectedApartment(); // Ensure preselected apartment is handled after loading
+        handlePreselectedApartment(); // Sicherstellen, dass die vorausgewählte Wohnung nach dem Laden richtig ausgewählt ist
     } catch (error) {
         console.error('Fehler beim Laden der Ferienwohnungen:', error);
     }
@@ -727,11 +758,9 @@ async function loadWohnungDetails() {
             const response = await fetch(`/api/ferienwohnungen/${wohnungId}`);
             const wohnung = await response.json();
 
-            // Update the image
             const wohnungBild = document.getElementById('wohnung-bild');
             wohnungBild.src = wohnung.bild ? '/' + wohnung.bild : 'img/placeholder.png';
 
-            // Initialize the map
             initializeMap(wohnung._id, wohnung.lat, wohnung.lng);
         } catch (error) {
             console.error('Error loading wohnung details:', error);
