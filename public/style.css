@@ -1,4 +1,5 @@
 /* Allgemeines Styling */
+/* Setzt grundlegende Stile für HTML und Body, wie Höhe, Auffüllung und Schriftart */
 html, body {
     height: 100%;
     margin: 0;
@@ -6,17 +7,22 @@ html, body {
     font-family: Arial, sans-serif;
 }
 
+/* Flexbox für Body */
+/* Der Body wird als flexbox-container verwendet, um Inhalte vertikal zu ordnen */
 body {
     display: flex;
     flex-direction: column;
     min-height: 100vh; /* Stellt sicher, dass der gesamte Bildschirm gefüllt wird */
 }
 
+/* Container Styling */
+/* Der Container füllt den restlichen Platz im flexbox-container aus */
 .container {
     flex: 1; /* Damit die Seite den restlichen Platz ausfüllt */
 }
 
 /* Navigation */
+/* Styling für die Navigationsleiste und deren Elemente */
 .navbar {
     background-color: #333;
     padding: 1rem;
@@ -37,6 +43,7 @@ body {
 }
 
 /* Hero Section */
+/* Styling für den Hero-Bereich, einschließlich Hintergrundbild und Textausrichtung */
 .hero {
     background-image: url('img/hero-bg.jpeg') !important;
     background-size: cover;
@@ -68,6 +75,8 @@ body {
     font-size: 18px;
 }
 
+/* Bild in der Navigationsleiste */
+/* Styling für das Bild in der Markenbezeichnung der Navigationsleiste */
 .navbar-brand img {
     width: 40px;
     height: 40px;
@@ -76,6 +85,7 @@ body {
 }
 
 /* Features Section */
+/* Styling für den Features-Bereich */
 .features {
     background-color: #f9f9f9;
     padding: 50px 0;
@@ -92,6 +102,7 @@ body {
 }
 
 /* Formular */
+/* Styling für Formularbeschriftungen und Eingabefelder */
 .form-label {
     font-weight: bold;
 }
@@ -110,6 +121,8 @@ button {
     box-sizing: border-box;
 }
 
+/* Button Styling */
+/* Styling für Buttons und deren Hover-Zustand */
 button {
     background-color: #0033ff;
     color: #fff;
@@ -124,12 +137,14 @@ button:hover {
 }
 
 /* Zusatzangebote */
+/* Styling für den Zusatzangebote-Bereich */
 #zusatzangebote {
     height: auto;
     margin-bottom: 15px;
 }
 
 /* Footer */
+/* Styling für den Footer */
 footer {
     background-color: #333;
     color: #fff;
@@ -139,6 +154,7 @@ footer {
 }
 
 /* Ferienwohnung Karten */
+/* Styling für die Karten der Ferienwohnungen */
 .img-container {
     height: 200px;
     overflow: hidden;
@@ -193,6 +209,8 @@ footer {
     margin: 10px;
 }
 
+/* Primärer Button */
+/* Styling für den primären Button und dessen Hover-Zustand */
 .btn-primary {
     background-color: #ffcc00;
     border-color: #ffcc00;
@@ -208,7 +226,8 @@ footer {
     border-color: #e6b800;
 }
 
-/* Small image styling for the booking page */
+/* Kleine Bilder */
+/* Styling für kleine Bilder auf der Buchungsseite */
 .small-image {
     max-width: 200px;
     height: auto;
@@ -216,6 +235,7 @@ footer {
 }
 
 /* Anklickbare Karten */
+/* Styling für Links ohne Textdekoration */
 a.text-decoration-none {
     text-decoration: none;
     color: inherit; /* Sicherstellen, dass die Farbe des Links nicht geändert wird */
@@ -227,6 +247,7 @@ a.text-decoration-none:hover {
 }
 
 /* Toast Notification Styling */
+/* Styling für die Toast-Benachrichtigung */
 .toast {
     visibility: hidden; /* Initially hidden */
     min-width: 250px;
@@ -250,7 +271,8 @@ a.text-decoration-none:hover {
     opacity: 1;
 }
 
-/* Styling for the map page */
+/* Karten-Seite */
+/* Styling für die Karte auf der Karten-Seite */
 #map {
     height: calc(100vh - 250px); /* Adjusted height to leave space for header and search */
     width: 100vw;
@@ -259,7 +281,7 @@ a.text-decoration-none:hover {
     position: relative;
 }
 
-/* Ensure the map doesn't overflow and is properly spaced */
+/* Sicherstellen, dass die Karte nicht überläuft und richtig platziert ist */
 .map-container {
     display: flex;
     flex-direction: column;
@@ -274,6 +296,7 @@ a.text-decoration-none:hover {
 }
 
 /* Responsive Design */
+/* Styling für verschiedene Bildschirmgrößen */
 @media (max-width: 768px) {
     .card {
         flex: 1 1 calc(50% - 20px); /* Karten nehmen 50% der Breite bei kleinen Bildschirmen ein */
@@ -306,6 +329,8 @@ a.text-decoration-none:hover {
     }
 }
 
+/* Ferienwohnungen-Container */
+/* Styling für die Karten im Ferienwohnungen-Container */
 #ferienwohnungen-container .card {
     margin-bottom: 20px;
 }

@@ -6,64 +6,64 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
 const Buchung = require('./models/buchung'); // Korrigiere den Pfad
-const multer = require('multer'); // Handling file uploads
-const path = require('path'); // To serve static files
-const fetch = require('node-fetch'); // To make API requests
-require('dotenv').config(); // Load environment variables
+const multer = require('multer'); // Zum Hochladen von Dateien
+const path = require('path'); // Zum Bereitstellen von statischen Dateien
+const fetch = require('node-fetch'); // Zum Ausführen von API-Anfragen
+require('dotenv').config(); // Lädt Umgebungsvariablen
 
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-// Serve static files (CSS, JS, Images)
+// Statische Dateien bereitstellen (CSS, JS, Bilder)
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static('uploads')); // Serve uploaded images
+app.use('/uploads', express.static('uploads')); // Bereitstellen von hochgeladenen Bildern
 
-// MongoDB connection
+// Verbindung zu MongoDB herstellen
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB verbunden'))
   .catch(err => console.error('Fehler bei der MongoDB-Verbindung:', err));
 
-// Function to normalize file paths
+// Funktion zum Normalisieren von Dateipfaden
 function normalizePath(filePath) {
-  return filePath.replace(/\\/g, '/'); // Replace backslashes with forward slashes
+  return filePath.replace(/\\/g, '/'); // Ersetzt Backslashes durch Slashes
 }
 
-// Configure multer for image uploads
+// Konfiguration von multer für das Hochladen von Bildern
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/'); // Set upload destination
+    cb(null, 'uploads/'); // Zielverzeichnis für Uploads
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname); // Rename files with timestamp
+    cb(null, Date.now() + '-' + file.originalname); // Dateien mit Zeitstempel umbenennen
   }
 });
 const upload = multer({ storage: storage });
 
-// User schema
+// Benutzerschema
 const BenutzerSchema = new mongoose.Schema({
   name: String,
   email: String,
   kennwort: String,
-  rolle: { type: String, default: 'user' } // Default to 'user'
+  rolle: { type: String, default: 'user' } // Standardmäßig 'user'
 });
 const Benutzer = mongoose.model('Benutzer', BenutzerSchema);
 
-// Apartment schema
+// Ferienwohnungsschema
 const FerienwohnungSchema = new mongoose.Schema({
   name: String,
   ort: String,
-  adresse: String, // New field for address
+  adresse: String, // Neues Feld für Adresse
   beschreibung: String,
   preis: Number,
   verfuegbarkeit: Boolean,
-  bild: String, // Store image path
+  bild: String, // Bildpfad speichern
   lat: Number,
   lng: Number
 });
 const Ferienwohnung = mongoose.model('Ferienwohnung', FerienwohnungSchema);
 
-// Register route
+// Registrierungsroute
 app.post('/register', async (req, res) => {
   const { name, email, kennwort } = req.body;
   const hashedPassword = await bcrypt.hash(kennwort, 10);
@@ -72,7 +72,7 @@ app.post('/register', async (req, res) => {
   res.status(201).send("Registrierung erfolgreich");
 });
 
-// Login route
+// Login-Route
 app.post('/login', async (req, res) => {
   const { email, kennwort } = req.body;
   const user = await Benutzer.findOne({ email });
@@ -85,7 +85,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Middleware for authentication check
+// Middleware zur Authentifizierungsprüfung
 function authMiddleware(req, res, next) {
   const token = req.header('Authorization').replace('Bearer ', '');
   console.log('Token:', token); // Debug: Überprüfe den Token
@@ -99,13 +99,13 @@ function authMiddleware(req, res, next) {
   }
 }
 
-// Middleware for admin check
+// Middleware zur Admin-Prüfung
 function adminMiddleware(req, res, next) {
   if (req.user.rolle !== 'admin') return res.status(403).send('Nur Admins dürfen diese Aktion ausführen');
   next();
 }
 
-// Route to get user profile
+// Route zum Abrufen des Benutzerprofils
 app.get('/api/profil', authMiddleware, (req, res) => {
   Benutzer.findById(req.user.userId)
     .then(user => {
@@ -117,7 +117,7 @@ app.get('/api/profil', authMiddleware, (req, res) => {
     .catch(err => res.status(500).json({ message: 'Serverfehler' }));
 });
 
-// Function to geocode address and get latitude and longitude
+// Funktion zur Geokodierung von Adressen
 async function geocodeAddress(address) {
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
@@ -128,7 +128,7 @@ async function geocodeAddress(address) {
 
     if (data.status === 'OK' && data.results.length > 0) {
       const location = data.results[0].geometry.location;
-      console.log('Geocoded address:', location); // Log the location to confirm it's correct
+      console.log('Geocoded address:', location); // Logge die Location zur Überprüfung
       return { lat: location.lat, lng: location.lng };
     } else {
       console.error(`Geocoding failed: ${data.status} - ${data.error_message}`);
@@ -140,15 +140,15 @@ async function geocodeAddress(address) {
   }
 }
 
-// Route to get all apartments
+// Route zum Abrufen aller Ferienwohnungen
 app.get('/api/ferienwohnungen', async (req, res) => {
   try {
     const apartments = await Ferienwohnung.find();
 
-    // Normalize the image paths before sending the response
+    // Normalisiere die Bildpfade vor dem Senden der Antwort
     apartments.forEach(apartment => {
       if (apartment.bild) {
-        apartment.bild = normalizePath(apartment.bild); // Ensure all backslashes are replaced
+        apartment.bild = normalizePath(apartment.bild); // Ersetze Backslashes
       }
     });
 
@@ -158,7 +158,7 @@ app.get('/api/ferienwohnungen', async (req, res) => {
   }
 });
 
-// Route to get a specific apartment by ID
+// Route zum Abrufen einer spezifischen Ferienwohnung nach ID
 app.get('/api/ferienwohnungen/:id', async (req, res) => {
     try {
         const wohnung = await Ferienwohnung.findById(req.params.id);
@@ -168,20 +168,20 @@ app.get('/api/ferienwohnungen/:id', async (req, res) => {
     }
 });
 
-// Route to add new apartment (Admin only)
+// Route zum Hinzufügen einer neuen Ferienwohnung (nur Admin)
 app.post('/api/ferienwohnungen', authMiddleware, adminMiddleware, upload.single('bild'), async (req, res) => {
-  const { name, ort, address, beschreibung, preis } = req.body; // Ändern Sie 'adresse' zu 'address'
+  const { name, ort, address, beschreibung, preis } = req.body; 
   const bild = req.file ? normalizePath(req.file.path) : null;
 
-  // Log the entire request body to debug the issue
+  // Logge den gesamten Request-Body zur Fehlerbehebung
   console.log('Request body:', req.body);
 
   try {
-    // Log the address to be geocoded
-    console.log('Geocoding address:', address); // Ändern Sie 'adresse' zu 'address'
+    // Logge die zu geokodierende Adresse
+    console.log('Geocoding address:', address); 
 
-    // Geocode the address to get lat and lng
-    const { lat, lng } = await geocodeAddress(address); // Ändern Sie 'adresse' zu 'address'
+    // Geokodiere die Adresse, um lat und lng zu erhalten
+    const { lat, lng } = await geocodeAddress(address); 
 
     const newApartment = new Ferienwohnung({ name, ort, adresse: address, beschreibung, preis, verfuegbarkeit: true, lat, lng, bild });
     const savedApartment = await newApartment.save();
@@ -192,7 +192,7 @@ app.post('/api/ferienwohnungen', authMiddleware, adminMiddleware, upload.single(
   }
 });
 
-// Edit apartment route (Admin only)
+// Route zum Bearbeiten einer Ferienwohnung (nur Admin)
 app.patch('/api/ferienwohnungen/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const apartment = await Ferienwohnung.findById(req.params.id);
@@ -211,7 +211,7 @@ app.patch('/api/ferienwohnungen/:id', authMiddleware, adminMiddleware, async (re
   }
 });
 
-// Delete apartment route (Admin only)
+// Route zum Löschen einer Ferienwohnung (nur Admin)
 app.delete('/api/ferienwohnungen/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const apartment = await Ferienwohnung.findById(req.params.id);
@@ -224,12 +224,12 @@ app.delete('/api/ferienwohnungen/:id', authMiddleware, adminMiddleware, async (r
   }
 });
 
-// Route for Google Maps API Key
+// Route für den Google Maps API-Schlüssel
 app.get('/api/google-maps-key', (req, res) => {
   res.json({ apiKey: process.env.GOOGLE_MAPS_API_KEY });
 });
 
-// Serve HTML pages
+// HTML-Seiten bereitstellen
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -254,22 +254,22 @@ app.get('/inserate-bearbeiten.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'inserate-bearbeiten.html'));
 });
 
-// Serve the map page
+// Karte-Seite bereitstellen
 app.get('/map.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'map.html'));
 });
 
-// Route to create a new booking
+// Route zum Erstellen einer neuen Buchung
 app.post('/api/buchungen', authMiddleware, async (req, res) => {
   try {
     const { wohnungId, checkin, checkout, zustellbett, kinderbett, fruehstueck, parkplatz } = req.body;
-    const userId = req.user.userId; // Extract userId from authenticated user
+    const userId = req.user.userId; // Extrahiere userId vom authentifizierten Benutzer
 
-     // Überprüfe, ob die wohnungId gültig ist
-  const wohnung = await Ferienwohnung.findById(wohnungId);
-  if (!wohnung) {
-    return res.status(400).json({ message: 'Ungültige wohnungId' });
-  }
+    // Überprüfe, ob die wohnungId gültig ist
+    const wohnung = await Ferienwohnung.findById(wohnungId);
+    if (!wohnung) {
+      return res.status(400).json({ message: 'Ungültige wohnungId' });
+    }
 
     const newBuchung = new Buchung({
       userId,
@@ -290,7 +290,7 @@ app.post('/api/buchungen', authMiddleware, async (req, res) => {
   }
 });
 
-// Route to get user bookings
+// Route zum Abrufen der Buchungen eines Benutzers
 app.get('/api/buchungen', authMiddleware, async (req, res) => {
   try {
       const buchungen = await Buchung.find({ userId: req.user.userId }).populate('wohnungId');
@@ -300,6 +300,8 @@ app.get('/api/buchungen', authMiddleware, async (req, res) => {
       res.status(500).json({ message: 'Fehler beim Abrufen der Buchungen' });
   }
 });
+
+// Server starten
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Server läuft auf Port ${PORT}`);

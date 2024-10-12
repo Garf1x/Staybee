@@ -4,15 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inserate Bearbeiten - StayBee</title>
+    <!-- Verlinkung der CSS-Dateien -->
     <link rel="stylesheet" href="style.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 
- <!-- Navigation -->
+<!-- Navigation -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
         <a class="navbar-brand" href="index.html">
+            <!-- Logo der Webseite -->
             <img src="img/logo.png" alt="StayBee Logo" style="width: 50px; height: 50px; margin-right: 10px;">
             StayBee
         </a>
@@ -21,6 +23,7 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
+                <!-- Navigationslinks -->
                 <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
                 <li class="nav-item"><a class="nav-link" href="ferienwohnungen.html">Ferienwohnungen</a></li>
                 <li class="nav-item"><a class="nav-link" href="buchungen.html">Meine Buchungen</a></li>
@@ -33,59 +36,58 @@
     </div>
 </nav>
 
+<!-- Inserate Section -->
+<section class="container py-5">
+    <h2 class="text-center">Inserate Bearbeiten</h2>
 
-    <!-- Inserate Section -->
-    <section class="container py-5">
-        <h2 class="text-center">Inserate Bearbeiten</h2>
+    <!-- Anzeigen der bestehenden Inserate -->
+    <div id="inserate-container" class="row mt-4"></div>
 
-        <!-- Listings Display -->
-        <div id="inserate-container" class="row mt-4"></div>
+    <!-- Formular zum Hinzufügen eines neuen Inserats -->
+    <h3 class="mt-5">Neues Inserat hinzufügen</h3>
+    <form id="inseratForm" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="name" class="form-label">Name der Ferienwohnung</label>
+            <input type="text" id="name" name="name" class="form-control" required>
+        </div>
 
-        <!-- Form for adding new listing -->
-        <h3 class="mt-5">Neues Inserat hinzufügen</h3>
-        <form id="inseratForm" enctype="multipart/form-data">
-            <div class="mb-3">
-                <label for="name" class="form-label">Name der Ferienwohnung</label>
-                <input type="text" id="name" name="name" class="form-control" required>
-            </div>
+        <div class="mb-3">
+            <label for="ort" class="form-label">Ort</label>
+            <input type="text" id="ort" name="ort" class="form-control" required>
+        </div>
 
-            <div class="mb-3">
-                <label for="ort" class="form-label">Ort</label>
-                <input type="text" id="ort" name="ort" class="form-control" required>
-            </div>
+        <div class="mb-3">
+            <label for="address" class="form-label">Adresse</label>
+            <input type="text" id="address" name="address" class="form-control" placeholder="Musterstraße 1, 12345 Berlin, Deutschland" required>
+        </div>
 
-            <div class="mb-3">
-                <label for="address" class="form-label">Adresse</label>
-                <input type="text" id="address" name="address" class="form-control" placeholder="Musterstraße 1, 12345 Berlin, Deutschland" required>
-            </div>
+        <div class="mb-3">
+            <label for="beschreibung" class="form-label">Beschreibung</label>
+            <textarea id="beschreibung" name="beschreibung" class="form-control" required></textarea>
+        </div>
 
-            <div class="mb-3">
-                <label for="beschreibung" class="form-label">Beschreibung</label>
-                <textarea id="beschreibung" name="beschreibung" class="form-control" required></textarea>
-            </div>
+        <div class="mb-3">
+            <label for="preis" class="form-label">Preis</label>
+            <input type="number" id="preis" name="preis" class="form-control" required>
+        </div>
 
-            <div class="mb-3">
-                <label for="preis" class="form-label">Preis</label>
-                <input type="number" id="preis" name="preis" class="form-control" required>
-            </div>
+        <div class="mb-3">
+            <label for="bild" class="form-label">Bild hochladen</label>
+            <input type="file" id="bild" name="bild" class="form-control" accept="image/*" required>
+        </div>
 
-            <div class="mb-3">
-                <label for="bild" class="form-label">Bild hochladen</label>
-                <input type="file" id="bild" name="bild" class="form-control" accept="image/*" required>
-            </div>
+        <button type="submit" class="btn btn-primary">Inserat erstellen</button>
+    </form>
+</section>
 
-            <button type="submit" class="btn btn-primary">Inserat erstellen</button>
-        </form>
-    </section>
-
-    <!-- Footer -->
+<!-- Footer -->
 <footer class="bg-dark text-white text-center py-3">
     <p>&copy; 2024 StayBee - Alle Rechte vorbehalten | <a href="impressum.html" class="text-white">Impressum</a></p>
 </footer>
 
-    <!-- Bootstrap JS and custom script -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="script.js"></script>
+<!-- Verlinkung der JavaScript-Dateien -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="script.js"></script>
 
 </body>
 </html>

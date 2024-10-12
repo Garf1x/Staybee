@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = 'login.html';
         }
     }
-  
+    
     async function loadUserBookings() {
         try {
             const token = localStorage.getItem('authToken');
@@ -660,7 +660,7 @@ document.getElementById('bookingForm').addEventListener('submit', async function
 
         if (response.ok) {
             alert('Buchung erfolgreich');
-            window.location.href = 'index.html';
+            window.location.href = 'index.html'; // Weiterleitung zur Startseite nach erfolgreicher Buchung
         } else {
             const error = await response.json();
             alert('Fehler bei der Buchung: ' + error.message);

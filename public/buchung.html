@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buchung - StayBee</title>
+    <!-- Verlinkung der CSS-Dateien -->
     <link rel="stylesheet" href="style.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
@@ -13,6 +14,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
         <a class="navbar-brand" href="index.html">
+            <!-- Logo der Webseite -->
             <img src="img/logo.png" alt="StayBee Logo" style="width: 50px; height: 50px; margin-right: 10px;">
             StayBee
         </a>
@@ -21,6 +23,7 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
+                <!-- Navigationslinks -->
                 <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
                 <li class="nav-item"><a class="nav-link" href="ferienwohnungen.html">Ferienwohnungen</a></li>
                 <li class="nav-item"><a class="nav-link" href="buchungen.html">Meine Buchungen</a></li>
@@ -37,11 +40,14 @@
 <section class="container mt-5">
     <div class="row">
         <div class="col-md-6">
+            <!-- Bild der Ferienwohnung -->
             <img id="wohnung-bild" src="img/placeholder.png" class="img-fluid mb-3" alt="Wohnung Bild">
+            <!-- Kartencontainer -->
             <div id="mapContainer" style="height: 400px; width: 100%; display: none;"></div>
         </div>
         <div class="col-md-6">
             <h2>Buchungsdetails</h2>
+            <!-- Buchungsformular -->
             <form id="bookingForm">
                 <div class="mb-3">
                     <label for="wohnungDropdown" class="form-label">Ferienwohnung</label>
@@ -55,6 +61,7 @@
                     <label for="checkout" class="form-label">Check-out Datum</label>
                     <input type="date" id="checkout" class="form-control" required>
                 </div>
+                <!-- Zusätzliche Optionen -->
                 <div class="form-check mb-3">
                     <input type="checkbox" class="form-check-input" id="zustellbett">
                     <label class="form-check-label" for="zustellbett">Zustellbett</label>
@@ -81,6 +88,7 @@
 <footer class="bg-dark text-white text-center py-3">
     <p>&copy; 2024 StayBee - Alle Rechte vorbehalten | <a href="impressum.html" class="text-white">Impressum</a></p>
 </footer>
+<!-- Verlinkung der JavaScript-Dateien -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script src="script.js"></script>
 </body>
