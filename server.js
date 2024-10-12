@@ -4,6 +4,8 @@ const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const router = express.Router();
+const Buchung = require('./models/buchung'); // Korrigiere den Pfad
 const multer = require('multer'); // Handling file uploads
 const path = require('path'); // To serve static files
 const fetch = require('node-fetch'); // To make API requests
@@ -85,14 +87,15 @@ app.post('/login', async (req, res) => {
 
 // Middleware for authentication check
 function authMiddleware(req, res, next) {
-  const token = req.headers['authorization'];
-  if (!token) return res.status(401).send('Zugriff verweigert');
+  const token = req.header('Authorization').replace('Bearer ', '');
+  console.log('Token:', token); // Debug: Überprüfe den Token
   try {
-    const verified = jwt.verify(token.split(" ")[1], process.env.JWT_SECRET);
-    req.user = verified;
-    next();
-  } catch (err) {
-    res.status(400).send('Ungültiges Token');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log('Decoded User:', decoded); // Debug: Überprüfe den dekodierten Benutzer
+      req.user = decoded;
+      next();
+  } catch (error) {
+      res.status(401).json({ message: 'Nicht autorisiert' });
   }
 }
 
@@ -153,6 +156,16 @@ app.get('/api/ferienwohnungen', async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
+});
+
+// Route to get a specific apartment by ID
+app.get('/api/ferienwohnungen/:id', async (req, res) => {
+    try {
+        const wohnung = await Ferienwohnung.findById(req.params.id);
+        res.json(wohnung);
+    } catch (error) {
+        res.status(500).json({ error: 'Fehler beim Abrufen der Ferienwohnung' });
+    }
 });
 
 // Route to add new apartment (Admin only)
@@ -246,8 +259,50 @@ app.get('/map.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'map.html'));
 });
 
-// Start the server
+// Route to create a new booking
+app.post('/api/buchungen', authMiddleware, async (req, res) => {
+  try {
+    const { wohnungId, checkin, checkout, zustellbett, kinderbett, fruehstueck, parkplatz } = req.body;
+    const userId = req.user.userId; // Extract userId from authenticated user
+
+     // Überprüfe, ob die wohnungId gültig ist
+  const wohnung = await Ferienwohnung.findById(wohnungId);
+  if (!wohnung) {
+    return res.status(400).json({ message: 'Ungültige wohnungId' });
+  }
+
+    const newBuchung = new Buchung({
+      userId,
+      wohnungId,
+      checkin,
+      checkout,
+      zustellbett,
+      kinderbett,
+      fruehstueck,
+      parkplatz
+    });
+
+    await newBuchung.save();
+    res.status(201).json({ message: 'Buchung erfolgreich erstellt', buchung: newBuchung });
+  } catch (error) {
+    console.error('Fehler bei der Buchung:', error);
+    res.status(500).json({ message: 'Fehler bei der Buchung', error });
+  }
+});
+
+// Route to get user bookings
+app.get('/api/buchungen', authMiddleware, async (req, res) => {
+  try {
+      const buchungen = await Buchung.find({ userId: req.user.userId }).populate('wohnungId');
+      console.log('Buchungen aus der Datenbank:', buchungen); // Debug: Überprüfe die abgerufenen Buchungen
+      res.json(buchungen);
+  } catch (error) {
+      res.status(500).json({ message: 'Fehler beim Abrufen der Buchungen' });
+  }
+});
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Server läuft auf Port ${PORT}`);
 });
+
+module.exports = router;

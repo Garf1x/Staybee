@@ -3,8 +3,146 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (page === 'ferienwohnungen') {
         loadFerienwohnungenFromDB();
-        initializeMaps();
+    } else if (page === 'buchung') {
+        if (checkLoginStatus()) {
+            document.getElementById('bookingFormContainer').style.display = 'block';
+            loadWohnungDetails();
+        } else {
+            document.getElementById('loginMessage').style.display = 'block';
+        }
+    } else if (page === 'buchungen') {
+        if (checkLoginStatus()) {
+            loadUserBookings();
+        } else {
+            alert('Bitte loggen Sie sich ein, um Ihre Buchungen zu sehen.');
+            window.location.href = 'login.html';
+        }
     }
+    
+    async function loadUserBookings() {
+        try {
+            const token = localStorage.getItem('authToken');
+            console.log('Auth Token:', token); // Debug: Überprüfe den Authentifizierungstoken
+            const response = await fetch('/api/buchungen', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Fehler beim Laden der Buchungen');
+            }
+
+            const buchungen = await response.json();
+            console.log('Buchungen:', buchungen); // Debug: Überprüfe die abgerufenen Buchungen
+            const container = document.getElementById('buchungen-container');
+            container.innerHTML = '';
+
+            if (buchungen.length === 0) {
+                container.innerHTML = '<p>Keine Buchungen gefunden.</p>';
+            } else {
+                buchungen.forEach(buchung => {
+                    const card = `
+                        <div class="col-md-4">
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title">Buchung für ${buchung.wohnungId.name}</h5>
+                                    <p class="card-text"><strong>Check-in:</strong> ${new Date(buchung.checkin).toLocaleDateString()}</p>
+                                    <p class="card-text"><strong>Check-out:</strong> ${new Date(buchung.checkout).toLocaleDateString()}</p>
+                                    <p class="card-text"><strong>Ort:</strong> ${buchung.wohnungId.ort}</p>
+                                    <p class="card-text"><strong>Preis:</strong> ${buchung.wohnungId.preis} €</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += card;
+                });
+            }
+        } catch (error) {
+            console.error('Fehler beim Laden der Buchungen:', error);
+            alert('Fehler beim Laden der Buchungen. Bitte versuchen Sie es später erneut.');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const page = document.body.getAttribute('data-page');
+        if (page === 'buchungen') {
+            loadUserBookings();
+        }
+    });
+
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            // Login-Logik hier
+        });
+    }
+
+    const bookingForm = document.getElementById('bookingForm');
+    if (bookingForm) {
+        bookingForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            // Buchungs-Logik hier
+        });
+    }
+    
+    function checkLoginStatus() {
+        const token = localStorage.getItem('authToken');
+        return !!token;
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        const page = document.body.getAttribute('data-page');
+        if (page === 'buchungen') {
+            if (checkLoginStatus()) {
+                loadUserBookings();
+            } else {
+                alert('Bitte loggen Sie sich ein, um Ihre Buchungen zu sehen.');
+                window.location.href = 'login.html';
+            }
+        }
+    });
+
+    // Hole den Google Maps API-Schlüssel und binde das Skript ein
+    fetch('/api/google-maps-key')
+        .then(response => response.json())
+        .then(data => {
+            const googleMapsApiKey = data.apiKey;
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&callback=initializeMaps`;
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+        })
+        .catch(error => console.error('Error loading Google Maps API key:', error));
+    
+    function checkLoginStatus() {
+        const authToken = localStorage.getItem('authToken');
+        return !!authToken; // Gibt true zurück, wenn ein Token vorhanden ist, andernfalls false
+    }
+    
+    // Hole den Google Maps API-Schlüssel und binde das Skript ein
+    fetch('/api/google-maps-key')
+        .then(response => response.json())
+        .then(data => {
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${data.apiKey}&callback=initializeMap`;
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+        })
+        .catch(error => console.error('Error loading Google Maps API key:', error));
+
+        const dateInput = document.querySelector('input[type="date"]');
+        if (dateInput) {
+            const today = new Date();
+            const day = String(today.getDate()).padStart(2, '0');
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const year = today.getFullYear();
+            const todayFormatted = year + '-' + month + '-' + day;
+            dateInput.setAttribute('min', todayFormatted);
+        }
 });
 
 async function loadFerienwohnungenFromDB() {
@@ -81,8 +219,6 @@ function initializeMaps() {
         console.error('initMapsFerienwohnungen function not found.');
     }
 }
-
-
 
 document.addEventListener('DOMContentLoaded', () => {
     const page = document.body.getAttribute('data-page');
@@ -325,12 +461,58 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const logoutButton = document.getElementById('logoutButton');
-    if (logoutButton) {
+    async function loadUserBookings() {
+        try {
+          const token = localStorage.getItem('authToken');
+          const response = await fetch('/api/buchungen', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          const buchungen = await response.json();
+          const container = document.getElementById('buchungen-container');
+          container.innerHTML = '';
+      
+          buchungen.forEach(buchung => {
+            if (buchung.wohnungId) {
+              const card = `
+                <div class="col-md-4">
+                  <div class="card mb-4">
+                    <div class="card-body">
+                      <h5 class="card-title">Buchung für ${buchung.wohnungId.name}</h5>
+                      <p class="card-text"><strong>Check-in:</strong> ${new Date(buchung.checkin).toLocaleDateString()}</p>
+                      <p class="card-text"><strong>Check-out:</strong> ${new Date(buchung.checkout).toLocaleDateString()}</p>
+                      <p class="card-text"><strong>Ort:</strong> ${buchung.wohnungId.ort}</p>
+                      <p class="card-text"><strong>Preis:</strong> ${buchung.wohnungId.preis} €</p>
+                    </div>
+                  </div>
+                </div>
+              `;
+              container.innerHTML += card;
+            } else {
+              console.error(`Buchung ${buchung._id} hat keine gültige wohnungId`);
+            }
+          });
+        } catch (error) {
+          console.error('Fehler beim Laden der Buchungen:', error);
+        }
+      }
+    
+        if (logoutButton) {
         logoutButton.addEventListener('click', () => {
             localStorage.removeItem('authToken');
             localStorage.removeItem('userRole');
             window.location.href = 'index.html';
         });
+    }
+
+    if (page === 'buchungen') {
+        if (authToken) {
+            loadUserBookings();
+        } else {
+            alert('Bitte loggen Sie sich ein, um Ihre Buchungen zu sehen.');
+            window.location.href = 'login.html';
+        }
     }
 });
 
@@ -367,3 +549,236 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+async function loadWohnungDetails() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const wohnungId = urlParams.get('id');
+
+    if (wohnungId) {
+        try {
+            const response = await fetch(`/api/ferienwohnungen/${wohnungId}`);
+            const wohnung = await response.json();
+
+            document.getElementById('wohnung-bild').src = wohnung.bild ? '/' + wohnung.bild : 'img/placeholder.png';
+            initializeMap(wohnung._id, wohnung.latitude, wohnung.longitude);
+        } catch (error) {
+            console.error('Error loading wohnung details:', error);
+        }
+    }
+}
+
+function initializeMap(id, lat, lng) {
+    const map = new google.maps.Map(document.getElementById('wohnung-karte'), {
+        center: { lat: lat, lng: lng },
+        zoom: 15
+    });
+
+    new google.maps.Marker({
+        position: { lat: lat, lng: lng },
+        map: map
+    });
+}
+document.addEventListener('DOMContentLoaded', () => {
+    const page = document.body.getAttribute('data-page');
+
+    if (page === 'buchung') {
+        loadWohnungDetails();
+    }
+
+    const dateInput = document.querySelector('input[type="date"]');
+    
+    if (dateInput) {
+        const today = new Date();
+        const day = String(today.getDate()).padStart(2, '0');
+        const month = String(today.getMonth() + 1).padStart(2, '0'); // Januar ist 0!
+        const year = today.getFullYear();
+        
+        const todayFormatted = year + '-' + month + '-' + day;
+        
+        dateInput.setAttribute('min', todayFormatted);
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const page = document.body.getAttribute('data-page');
+
+    if (page === 'buchung') {
+        if (checkLoginStatus()) {
+            document.getElementById('bookingFormContainer').style.display = 'block';
+            loadWohnungDetails();
+        } else {
+            document.getElementById('loginMessage').style.display = 'block';
+        }
+    }
+
+    const dateInput = document.querySelector('input[type="date"]');
+    
+    if (dateInput) {
+        const today = new Date();
+        const day = String(today.getDate()).padStart(2, '0');
+        const month = String(today.getMonth() + 1).padStart(2, '0'); // Januar ist 0!
+        const year = today.getFullYear();
+        
+        const todayFormatted = year + '-' + month + '-' + day;
+        
+        dateInput.setAttribute('min', todayFormatted);
+    }
+});
+
+async function loadWohnungDetails() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const wohnungId = urlParams.get('id');
+
+    if (wohnungId) {
+        try {
+            const response = await fetch(`/api/ferienwohnungen/${wohnungId}`);
+            const wohnung = await response.json();
+
+            // Update the image
+            const wohnungBild = document.getElementById('wohnung-bild');
+            wohnungBild.src = wohnung.bild ? '/' + wohnung.bild : 'img/placeholder.png';
+
+            // Initialize the map
+            initializeMap(wohnung._id, wohnung.lat, wohnung.lng);
+        } catch (error) {
+            console.error('Error loading wohnung details:', error);
+        }
+    }
+}
+
+function initializeMap(id, lat, lng) {
+    const map = new google.maps.Map(document.getElementById('wohnung-karte'), {
+        center: { lat: lat, lng: lng },
+        zoom: 15
+    });
+
+    new google.maps.Marker({
+        position: { lat: lat, lng: lng },
+        map: map
+    });
+}
+document.getElementById('bookingForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const data = {
+        wohnungId: document.getElementById('wohnungDropdown').value,
+        checkin: document.getElementById('checkin').value,
+        checkout: document.getElementById('checkout').value,
+        zustellbett: document.getElementById('zustellbett').checked,
+        kinderbett: document.getElementById('kinderbett').checked,
+        fruehstueck: document.getElementById('fruehstueck').checked,
+        parkplatz: document.getElementById('parkplatz').checked
+    };
+
+    try {
+        const response = await fetch('/api/buchungen', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            alert('Buchung erfolgreich');
+            window.location.href = 'index.html'; // Weiterleitung zur Startseite nach erfolgreicher Buchung
+        } else {
+            const error = await response.json();
+            alert('Fehler bei der Buchung: ' + error.message);
+        }
+    } catch (error) {
+        console.error('Fehler bei der Buchung:', error);
+        alert('Ein Fehler ist aufgetreten, bitte versuchen Sie es erneut.');
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const page = document.body.getAttribute('data-page');
+
+    if (page === 'buchung') {
+        if (checkLoginStatus()) {
+            document.getElementById('bookingFormContainer').style.display = 'block';
+            loadFerienwohnungenForBooking();
+            loadWohnungDetails();
+        } else {
+            document.getElementById('loginMessage').style.display = 'block';
+        }
+    }
+
+    const dateInput = document.querySelector('input[type="date"]');
+    
+    if (dateInput) {
+        const today = new Date();
+        const day = String(today.getDate()).padStart(2, '0');
+        const month = String(today.getMonth() + 1).padStart(2, '0'); // Januar ist 0!
+        const year = today.getFullYear();
+        
+        const todayFormatted = year + '-' + month + '-' + day;
+        
+        dateInput.setAttribute('min', todayFormatted);
+    }
+});
+
+async function loadFerienwohnungenForBooking() {
+    try {
+        const response = await fetch('/api/ferienwohnungen');
+        const ferienwohnungen = await response.json();
+        const wohnungDropdown = document.getElementById('wohnungDropdown');
+        wohnungDropdown.innerHTML = `<option value="" selected>Bitte wählen...</option>`;
+
+        ferienwohnungen.forEach(wohnung => {
+            const option = document.createElement('option');
+            option.value = wohnung._id;
+            option.textContent = `${wohnung.name} (${wohnung.ort})`;
+            wohnungDropdown.appendChild(option);
+        });
+
+        handlePreselectedApartment(); // Ensure preselected apartment is handled after loading
+    } catch (error) {
+        console.error('Fehler beim Laden der Ferienwohnungen:', error);
+    }
+}
+
+async function loadWohnungDetails() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const wohnungId = urlParams.get('id');
+
+    if (wohnungId) {
+        try {
+            const response = await fetch(`/api/ferienwohnungen/${wohnungId}`);
+            const wohnung = await response.json();
+
+            // Update the image
+            const wohnungBild = document.getElementById('wohnung-bild');
+            wohnungBild.src = wohnung.bild ? '/' + wohnung.bild : 'img/placeholder.png';
+
+            // Initialize the map
+            initializeMap(wohnung._id, wohnung.lat, wohnung.lng);
+        } catch (error) {
+            console.error('Error loading wohnung details:', error);
+        }
+    }
+}
+
+function checkLoginStatus() {
+    const authToken = localStorage.getItem('authToken');
+    return !!authToken; // Gibt true zurück, wenn ein Token vorhanden ist, andernfalls false
+}
+
+function initializeMap(id, lat, lng) {
+    const mapContainer = document.getElementById('mapContainer');
+    if (mapContainer && lat && lng) {
+        mapContainer.style.display = 'block';
+
+        const map = new google.maps.Map(mapContainer, {
+            center: { lat: lat, lng: lng },
+            zoom: 12
+        });
+
+        new google.maps.Marker({
+            position: { lat: lat, lng: lng },
+            map: map
+        });
+    }
+}

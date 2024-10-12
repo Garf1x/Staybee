@@ -23,8 +23,9 @@
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
                 <li class="nav-item"><a class="nav-link" href="ferienwohnungen.html">Ferienwohnungen</a></li>
-                <li class="nav-item"><a class="nav-link" href="buchung.html">Buchung</a></li>
+                <li class="nav-item"><a class="nav-link" href="buchungen.html">Meine Buchungen</a></li>
                 <li class="nav-item" id="profileLink"><a class="nav-link" href="profile.html">Profil</a></li>
+                <li class="nav-item" id="adminNav" style="display: none;"><a class="nav-link" href="inserate-bearbeiten.html">Inserate Bearbeiten</a></li>
                 <li class="nav-item" id="loginNav"><a class="nav-link" href="login.html">Login</a></li>
                 <li class="nav-item" id="logoutNav" style="display:none;"><a class="nav-link" href="#" id="logoutButton">Logout</a></li>
             </ul>
@@ -33,66 +34,46 @@
 </nav>
 
 <!-- Buchungsdetails Section -->
-<section class="py-5">
-    <div class="container">
-        <h2 class="text-center">Buchungsdetails</h2>
-        <p class="text-center">Wählen Sie eine Ferienwohnung</p>
-        <form id="bookingForm">
-            <div class="row mb-3">
-                <div class="col-md-6">
+<section class="container mt-5">
+    <div class="row">
+        <div class="col-md-6">
+            <img id="wohnung-bild" src="img/placeholder.png" class="img-fluid mb-3" alt="Wohnung Bild">
+            <div id="mapContainer" style="height: 400px; width: 100%; display: none;"></div>
+        </div>
+        <div class="col-md-6">
+            <h2>Buchungsdetails</h2>
+            <form id="bookingForm">
+                <div class="mb-3">
                     <label for="wohnungDropdown" class="form-label">Ferienwohnung</label>
-                    <select class="form-select" id="wohnungDropdown"></select>
+                    <select id="wohnungDropdown" class="form-select" required></select>
                 </div>
-            </div>
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="name" class="form-label">Ihr Name</label>
-                    <input type="text" class="form-control" id="name" required>
-                </div>
-                <div class="col-md-6">
-                    <label for="email" class="form-label">Ihre E-Mail</label>
-                    <input type="email" class="form-control" id="email" required>
-                </div>
-            </div>
-            <div class="row mb-3">
-                <div class="col-md-6">
+                <div class="mb-3">
                     <label for="checkin" class="form-label">Check-in Datum</label>
-                    <input type="date" class="form-control" id="checkin" required>
+                    <input type="date" id="checkin" class="form-control" required>
                 </div>
-                <div class="col-md-6">
+                <div class="mb-3">
                     <label for="checkout" class="form-label">Check-out Datum</label>
-                    <input type="date" class="form-control" id="checkout" required>
+                    <input type="date" id="checkout" class="form-control" required>
                 </div>
-            </div>
-
-            <!-- Additional images section -->
-            <div id="wohnungDetails" class="mb-3"></div>
-            <div id="wohnungBilder" class="d-flex flex-wrap mb-3"></div> <!-- New section for additional images -->
-
-            <div class="row mb-3">
-                <div class="col-md-12">
-                    <label for="angebote" class="form-label">Zusatzangebote</label>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="zustellbett">
-                        <label class="form-check-label" for="zustellbett">Zustellbett</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="kinderbett">
-                        <label class="form-check-label" for="kinderbett">Kinderbett</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="fruehstueck">
-                        <label class="form-check-label" for="fruehstueck">Frühstück</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="parkplatz">
-                        <label class="form-check-label" for="parkplatz">Parkplatz</label>
-                    </div>
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" id="zustellbett">
+                    <label class="form-check-label" for="zustellbett">Zustellbett</label>
                 </div>
-            </div>
-
-            <button type="submit" class="btn btn-primary w-100">Buchung abschicken</button>
-        </form>
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" id="kinderbett">
+                    <label class="form-check-label" for="kinderbett">Kinderbett</label>
+                </div>
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" id="fruehstueck">
+                    <label class="form-check-label" for="fruehstueck">Frühstück</label>
+                </div>
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" id="parkplatz">
+                    <label class="form-check-label" for="parkplatz">Parkplatz</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Buchen</button>
+            </form>
+        </div>
     </div>
 </section>
 
@@ -100,7 +81,7 @@
 <footer class="bg-dark text-white text-center py-3">
     <p>&copy; 2024 StayBee - Alle Rechte vorbehalten</p>
 </footer>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
