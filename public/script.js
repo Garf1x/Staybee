@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = 'login.html';
         }
     }
-    
+  
     async function loadUserBookings() {
         try {
             const token = localStorage.getItem('authToken');
@@ -104,36 +104,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Hole den Google Maps API-Schlüssel und binde das Skript ein
-    fetch('/api/google-maps-key')
-        .then(response => response.json())
-        .then(data => {
-            const googleMapsApiKey = data.apiKey;
-            const script = document.createElement('script');
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&callback=initializeMaps`;
-            script.async = true;
-            script.defer = true;
-            document.head.appendChild(script);
-        })
-        .catch(error => console.error('Error loading Google Maps API key:', error));
     
     function checkLoginStatus() {
         const authToken = localStorage.getItem('authToken');
         return !!authToken; // Gibt true zurück, wenn ein Token vorhanden ist, andernfalls false
     }
     
-    // Hole den Google Maps API-Schlüssel und binde das Skript ein
-    fetch('/api/google-maps-key')
-        .then(response => response.json())
-        .then(data => {
-            const script = document.createElement('script');
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${data.apiKey}&callback=initializeMap`;
-            script.async = true;
-            script.defer = true;
-            document.head.appendChild(script);
-        })
-        .catch(error => console.error('Error loading Google Maps API key:', error));
-
         const dateInput = document.querySelector('input[type="date"]');
         if (dateInput) {
             const today = new Date();
@@ -211,6 +187,8 @@ fetch('/api/google-maps-key')
         document.head.appendChild(script);
     })
     .catch(error => console.error('Error fetching Google Maps API Key:', error));
+
+    
 
 function initializeMaps() {
     if (typeof initMapsFerienwohnungen === 'function') {
@@ -682,7 +660,7 @@ document.getElementById('bookingForm').addEventListener('submit', async function
 
         if (response.ok) {
             alert('Buchung erfolgreich');
-            window.location.href = 'index.html'; // Weiterleitung zur Startseite nach erfolgreicher Buchung
+            window.location.href = 'index.html';
         } else {
             const error = await response.json();
             alert('Fehler bei der Buchung: ' + error.message);
