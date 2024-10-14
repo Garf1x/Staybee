@@ -383,6 +383,13 @@ function updateWohnungDetails(wohnungId) {
     .catch(error => console.error('Fehler beim Laden der Ferienwohnung:', error));
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    const page = document.body.getAttribute('data-page');
+    if (page === 'inserate-bearbeiten') {
+        loadInserateVerwaltung();
+    }
+});
+
 // Admin funktion: Ferienwohnungen laden und managen
 async function loadInserateVerwaltung() {
     try {
@@ -443,7 +450,6 @@ window.deleteInserat = async function(id) {
 window.editInserat = function(id) {
     alert(`Inserat ${id} bearbeiten`);
 }
-
 // Authentifizierung und Navigation Sichtbarkeit handhaben
 document.addEventListener('DOMContentLoaded', () => {
     const authToken = localStorage.getItem('authToken');
@@ -760,6 +766,7 @@ async function loadWohnungDetails() {
 
             const wohnungBild = document.getElementById('wohnung-bild');
             wohnungBild.src = wohnung.bild ? '/' + wohnung.bild : 'img/placeholder.png';
+
 
             initializeMap(wohnung._id, wohnung.lat, wohnung.lng);
         } catch (error) {
