@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 /**
  * Schema für Ferienwohnung.
  * 
- * @typedef {Object} FerienwohnungSchema
+ * @typedef {Object} FerienwohnungSchema - Name des Schemas
  * @property {string} name - Der Name der Ferienwohnung. Erforderlich.
  * @property {string} ort - Der Ort der Ferienwohnung. Erforderlich.
  * @property {string} beschreibung - Eine Beschreibung der Ferienwohnung. Erforderlich.

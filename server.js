@@ -35,7 +35,7 @@ const storage = multer.diskStorage({
     cb(null, 'uploads/'); // Zielverzeichnis für Uploads
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname); // Dateien mit Zeitstempel umbenennen
+    cb(null, Date.now() + '-' + file.originalname); // Dateien mit Zeitstempel umbenennen --> Filename
   }
 });
 const upload = multer({ storage: storage });
@@ -53,7 +53,7 @@ const Benutzer = mongoose.model('Benutzer', BenutzerSchema);
 const FerienwohnungSchema = new mongoose.Schema({
   name: String,
   ort: String,
-  adresse: String, // Neues Feld für Adresse
+  adresse: String, 
   beschreibung: String,
   preis: Number,
   verfuegbarkeit: Boolean,
@@ -105,7 +105,7 @@ function adminMiddleware(req, res, next) {
   next();
 }
 
-// Route zum Abrufen des Benutzerprofils
+// Route zum Abrufen des Benutzerprofils (Nicht funktional)
 app.get('/api/profil', authMiddleware, (req, res) => {
   Benutzer.findById(req.user.userId)
     .then(user => {
@@ -119,13 +119,14 @@ app.get('/api/profil', authMiddleware, (req, res) => {
 
 // Funktion zur Geokodierung von Adressen
 async function geocodeAddress(address) {
-  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY; 
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`; // Gooogle Maps API-URL
 
   try {
     const response = await fetch(url);
     const data = await response.json();
 
+    // Geocodieren der Adresse
     if (data.status === 'OK' && data.results.length > 0) {
       const location = data.results[0].geometry.location;
       console.log('Geocoded address:', location); // Logge die Location zur Überprüfung
@@ -173,7 +174,7 @@ app.post('/api/ferienwohnungen', authMiddleware, adminMiddleware, upload.single(
   const { name, ort, address, beschreibung, preis } = req.body; 
   const bild = req.file ? normalizePath(req.file.path) : null;
 
-  // Logge den gesamten Request-Body zur Fehlerbehebung
+  // Logge den gesamten Request-Body zur Fehlerbehebung (nur für Debugging relevant)
   console.log('Request body:', req.body);
 
   try {
@@ -192,7 +193,7 @@ app.post('/api/ferienwohnungen', authMiddleware, adminMiddleware, upload.single(
   }
 });
 
-// Route zum Bearbeiten einer Ferienwohnung (nur Admin)
+// Route zum Bearbeiten einer Ferienwohnung (nur Admin) (nicht funktional)
 app.patch('/api/ferienwohnungen/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const apartment = await Ferienwohnung.findById(req.params.id);
@@ -211,7 +212,7 @@ app.patch('/api/ferienwohnungen/:id', authMiddleware, adminMiddleware, async (re
   }
 });
 
-// Route zum Löschen einer Ferienwohnung (nur Admin)
+// Route zum Löschen einer Ferienwohnung (nur Admin) (nicht funktional)
 app.delete('/api/ferienwohnungen/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const apartment = await Ferienwohnung.findById(req.params.id);
@@ -290,7 +291,7 @@ app.post('/api/buchungen', authMiddleware, async (req, res) => {
   }
 });
 
-// Route zum Abrufen der Buchungen eines Benutzers
+// Route zum Abrufen der Buchungen eines Benutzers (Meine Buchungen)
 app.get('/api/buchungen', authMiddleware, async (req, res) => {
   try {
       const buchungen = await Buchung.find({ userId: req.user.userId }).populate('wohnungId');

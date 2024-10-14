@@ -3,9 +3,14 @@ const mongoose = require('mongoose');
 /**
  * Schema für Buchungen in der Datenbank.
  * 
- * @typedef {Object} BuchungSchema
- * @property {mongoose.Schema.Types.ObjectId} userId - Die ID des Benutzers, der die Buchung vorgenommen hat. Referenziert das 'Benutzer'-Schema.
- * @property {mongoose.Schema.Types.ObjectId} wohnungId - Die ID der Ferienwohnung, die gebucht wurde. Referenziert das 'Ferienwohnung'-Schema.
+ * @typedef {Object} BuchungSchema - Name des Schemas
+ * 
+ * @property {mongoose.Schema.Types.ObjectId} userId - Die ID des Benutzers, der die Buchung vorgenommen hat. 
+ * Referenziert das 'Benutzer'-Schema in der Server.js.
+ * 
+ * @property {mongoose.Schema.Types.ObjectId} wohnungId - Die ID der Ferienwohnung, die gebucht wurde. 
+ * Referenziert das 'Ferienwohnung'-Schema in der Server.js.
+ * 
  * @property {Date} checkin - Das Check-in-Datum der Buchung.
  * @property {Date} checkout - Das Check-out-Datum der Buchung.
  * @property {Boolean} zustellbett - Gibt an, ob ein Zustellbett benötigt wird. Standardwert ist false.
