@@ -10,7 +10,7 @@ const mongoose = require('mongoose');
  * @property {string} beschreibung - Eine Beschreibung der Ferienwohnung. Erforderlich.
  * @property {number} preis - Der Preis der Ferienwohnung. Erforderlich.
  * @property {boolean} [verfuegbarkeit=true] - Die Verfügbarkeit der Ferienwohnung. Standardmäßig auf true gesetzt.
- * @property {string} [bild] - Der Pfad zum Bild der Ferienwohnung. Optional.
+ * @property {string} [bild] - Der Pfad zum Bild der Ferienwohnung. 
  * @property {number} [lat] - Die Breite der Ferienwohnung. Optional.
  * @property {number} [lng] - Die Länge der Ferienwohnung. Optional.
  */
