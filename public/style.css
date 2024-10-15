@@ -246,55 +246,6 @@ a.text-decoration-none:hover {
     color: inherit; /* Verhindert eine Farbänderung bei Hover */
 }
 
-/* Toast Notification Styling */
-/* Styling für die Toast-Benachrichtigung */
-.toast {
-    visibility: hidden; /* Initially hidden */
-    min-width: 250px;
-    margin-left: -125px;
-    background-color: #333;
-    color: #fff;
-    text-align: center;
-    border-radius: 8px;
-    padding: 16px;
-    position: fixed;
-    z-index: 1;
-    left: 50%;
-    bottom: 30px;
-    font-size: 17px;
-    opacity: 0;
-    transition: opacity 0.5s ease, visibility 0.5s ease;
-}
-
-.toast.show {
-    visibility: visible; /* Show the toast */
-    opacity: 1;
-}
-
-/* Karten-Seite */
-/* Styling für die Karte auf der Karten-Seite */
-#map {
-    height: calc(100vh - 250px); /* Adjusted height to leave space for header and search */
-    width: 100vw;
-    margin: 0;
-    padding: 0;
-    position: relative;
-}
-
-/* Sicherstellen, dass die Karte nicht überläuft und richtig platziert ist */
-.map-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.map-header {
-    margin-bottom: 20px;
-    text-align: center;
-    font-size: 24px;
-    font-weight: bold;
-}
-
 /* Responsive Design */
 /* Styling für verschiedene Bildschirmgrößen */
 @media (max-width: 768px) {

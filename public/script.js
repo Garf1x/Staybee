@@ -1,46 +1,55 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Liest den Wert des Attributs 'data-page' aus dem <body>-Tag aus, um zu wissen, welche Seite geladen ist
     const page = document.body.getAttribute('data-page');
 
+    // Überprüft, welche Seite aufgerufen wurde
     if (page === 'ferienwohnungen') {
-        loadFerienwohnungenFromDB();
+        loadFerienwohnungenFromDB(); 
     } else if (page === 'buchung') {
+        // Überprüft, ob der Benutzer eingeloggt ist, bevor das Buchungsformular angezeigt wird
         if (checkLoginStatus()) {
-            document.getElementById('bookingFormContainer').style.display = 'block';
-            loadWohnungDetails();
+            document.getElementById('bookingFormContainer').style.display = 'block'; 
+            loadWohnungDetails(); 
         } else {
-            document.getElementById('loginMessage').style.display = 'block';
+            document.getElementById('loginMessage').style.display = 'block'; // Zeigt eine Nachricht an, dass der Benutzer sich einloggen muss
         }
     } else if (page === 'buchungen') {
+        // Überprüft, ob der Benutzer eingeloggt ist, um meine Buchungen anzuzeigen
         if (checkLoginStatus()) {
-            loadUserBookings();
+            loadUserBookings(); 
         } else {
             alert('Bitte loggen Sie sich ein, um Ihre Buchungen zu sehen.');
-            window.location.href = 'login.html';
+            window.location.href = 'login.html'; // Leitet zur Login-Seite um
         }
     }
-    
+
+    // Definiert eine asynchrone Funktion zum Abrufen der Buchungen des Benutzers
     async function loadUserBookings() {
         try {
-            const token = localStorage.getItem('authToken');
-            console.log('Auth Token:', token); // Debug: Überprüfe den Authentifizierungstoken
+            const token = localStorage.getItem('authToken'); // Holt das Authentifizierungstoken aus dem Local Storage
+            console.log('Auth Token:', token); // Debug: Zeigt das Token im Konsolen-Log
+
+            // Sendet eine Anfrage an den Server, um die Buchungen zu laden
             const response = await fetch('/api/buchungen', {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}` // Sendet das Token zur Authentifizierung
                 }
             });
 
             if (!response.ok) {
-                throw new Error('Fehler beim Laden der Buchungen');
+                throw new Error('Fehler beim Laden der Buchungen'); // Wenn die Antwort nicht erfolgreich ist, wird ein Fehler geworfen
             }
 
-            const buchungen = await response.json();
-            console.log('Buchungen:', buchungen); // Debug: Überprüfe die abgerufenen Buchungen
-            const container = document.getElementById('buchungen-container');
-            container.innerHTML = '';
+            const buchungen = await response.json(); // Wandelt die Antwort in ein JSON-Objekt um
+            console.log('Buchungen:', buchungen); // Debug: Zeigt die Buchungsdaten im Konsolen-Log
 
-            if (buchungen.length === 0) {
-                container.innerHTML = '<p>Keine Buchungen gefunden.</p>';
+            const container = document.getElementById('buchungen-container'); // Holt den Container, wo die Buchungen angezeigt werden sollen
+            container.innerHTML = ''; // Löscht den Inhalt des Containers
+
+            if (buchungen.length === 0) { // Wenn keine Buchungen existieren
+                container.innerHTML = '<p>Keine Buchungen gefunden.</p>'; 
             } else {
+                // Erstellt und fügt eine Karte für jede Buchung hinzu
                 buchungen.forEach(buchung => {
                     const card = `
                         <div class="col-md-4">
@@ -55,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
                     `;
-                    container.innerHTML += card;
+                    container.innerHTML += card; // Fügt die Karte in den Container ein
                 });
             }
         } catch (error) {
@@ -64,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Wiederholt das Hinzufügen eines DOMContentLoaded-Eventlisteners
     document.addEventListener('DOMContentLoaded', () => {
         const page = document.body.getAttribute('data-page');
         if (page === 'buchungen') {
@@ -71,93 +81,95 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Holt das Login-Formular und fügt einen Event-Listener für die Formularübermittlung hinzu
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            // Login-Logik hier
-            document.getElementById('loginForm').addEventListener('submit', async function(e) {
-                e.preventDefault();
-    
-                const data = {
-                    email: document.getElementById('email').value,
-                    kennwort: document.getElementById('password').value
-                };
-    
-                try {
-                    const response = await fetch('/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
-                    });
-    
-                    if (response.ok) {
-                        const result = await response.json();
-                        localStorage.setItem('authToken', result.token); // Speichert das JWT im LocalStorage
-                        localStorage.setItem('userRole', result.rolle);  // Speichert die Benutzerrolle (admin/user)
-    
-                        alert('Login erfolgreich');
-                        window.location.href = 'index.html'; // Weiterleitung zur Startseite nach erfolgreichem Login
-                    } else {
-                        const error = await response.json();
-                        alert('Fehler beim Login: ' + error.message);
-                    }
-                } catch (error) {
-                    console.error('Fehler beim Login:', error);
-                    alert('Ein Fehler ist aufgetreten, bitte versuchen Sie es erneut.');
+            e.preventDefault(); // Verhindert das Standardformular-Verhalten
+
+            const data = {
+                email: document.getElementById('email').value,
+                kennwort: document.getElementById('password').value
+            };
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data) // Senden der Anmeldedaten als JSON
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    localStorage.setItem('authToken', result.token); // Speichert das Authentifizierungstoken im Local Storage
+                    localStorage.setItem('userRole', result.rolle);  // Speichert die Benutzerrolle
+
+                    alert('Login erfolgreich');
+                    window.location.href = 'index.html'; // Weiterleitung zur Startseite
+                } else {
+                    const error = await response.json();
+                    alert('Fehler beim Login: ' + error.message); // Zeigt eine Fehlermeldung an
                 }
-            });
+            } catch (error) {
+                console.error('Fehler beim Login:', error);
+                alert('Ein Fehler ist aufgetreten, bitte versuchen Sie es erneut.');
+            }
         });
     }
 
+    // Holt das Buchungsformular und fügt einen Event-Listener für die Formularübermittlung hinzu
     const bookingForm = document.getElementById('bookingForm');
     if (bookingForm) {
         bookingForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            // Buchungs-Logik hier
         });
     }
-    
+
+    // Funktion zur Überprüfung, ob der Benutzer eingeloggt ist, indem nach dem Token im Local Storage gesucht wird
     function checkLoginStatus() {
         const token = localStorage.getItem('authToken');
-        return !!token;
+        return !!token; // Gibt true zurück, wenn das Token vorhanden ist, andernfalls false
     }
-    
+
+    // Wiederholte DOMContentLoaded-Funktion zur Seite "Buchungen"
     document.addEventListener('DOMContentLoaded', () => {
         const page = document.body.getAttribute('data-page');
         if (page === 'buchungen') {
             if (checkLoginStatus()) {
-                loadUserBookings();
+                loadUserBookings(); 
             } else {
                 alert('Bitte loggen Sie sich ein, um Ihre Buchungen zu sehen.');
-                window.location.href = 'login.html';
+                window.location.href = 'login.html'; // Leitet zur Login-Seite um
             }
         }
     });
 
-    
+    // Diese Funktion prüft erneut den Login-Status durch Suche nach dem Token
     function checkLoginStatus() {
         const authToken = localStorage.getItem('authToken');
-        return !!authToken; // Gibt true zurück, wenn ein Token vorhanden ist, andernfalls false
+        return !!authToken; // Gibt true zurück, wenn ein Token vorhanden ist
     }
-    
-        const dateInput = document.querySelector('input[type="date"]');
-        if (dateInput) {
-            const today = new Date();
-            const day = String(today.getDate()).padStart(2, '0');
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const year = today.getFullYear();
-            const todayFormatted = year + '-' + month + '-' + day;
-            dateInput.setAttribute('min', todayFormatted);
-        }
+
+    // Setzt das Mindestdatum eines Datum-Eingabefeldes auf das heutige Datum
+    const dateInput = document.querySelector('input[type="date"]');
+    if (dateInput) {
+        const today = new Date();
+        const day = String(today.getDate()).padStart(2, '0');
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const year = today.getFullYear();
+        const todayFormatted = year + '-' + month + '-' + day;
+        dateInput.setAttribute('min', todayFormatted); // Mindestdatum setzen
+    }
 });
 
+// Lädt Ferienwohnungen aus der Datenbank und zeigt diese an
 async function loadFerienwohnungenFromDB() {
     try {
         const response = await fetch('/api/ferienwohnungen');
         const ferienwohnungen = await response.json();
+
         const container = document.getElementById('ferienwohnungen-container');
-        container.innerHTML = '';
+        container.innerHTML = ''; // Container-Inhalt löschen
 
         ferienwohnungen.forEach(wohnung => {
             const card = `
@@ -178,10 +190,10 @@ async function loadFerienwohnungenFromDB() {
                     </a>
                 </div>
             `;
-            container.innerHTML += card;
+            container.innerHTML += card; // Fügt die HTML-Karte dem Container hinzu
         });
 
-        // Map initialisieren für jedes Apartment
+        // Initialisiert Google Maps für jede Ferienwohnung
         initMapsFerienwohnungen(ferienwohnungen);
 
     } catch (error) {
@@ -189,7 +201,7 @@ async function loadFerienwohnungenFromDB() {
     }
 }
 
-// Map initialisieren für jedes Apartment
+// Initialisiert die Map für jede Ferienwohnung basierend auf ihren Koordinaten
 function initMapsFerienwohnungen(ferienwohnungen) {
     ferienwohnungen.forEach(wohnung => {
         const mapContainer = document.getElementById(`map${wohnung._id}`);
@@ -207,7 +219,7 @@ function initMapsFerienwohnungen(ferienwohnungen) {
     });
 }
 
-// Hole den Google Maps API-Schlüssel und lade das Skript
+// Holt den Google Maps API-Schlüssel und fügt das Skript dynamisch dem Dokument hinzu
 fetch('/api/google-maps-key')
     .then(response => response.json())
     .then(data => {
@@ -215,12 +227,11 @@ fetch('/api/google-maps-key')
         script.src = `https://maps.googleapis.com/maps/api/js?key=${data.apiKey}&callback=initializeMaps`;
         script.async = true;
         script.defer = true;
-        document.head.appendChild(script);
+        document.head.appendChild(script); // Fügt das Google Maps Skript dem Dokument hinzu
     })
     .catch(error => console.error('Error fetching Google Maps API Key:', error));
 
-    
-
+// Initialisiert die Google Maps API und überprüft, ob die Initialisierungsfunktion vorhanden ist
 function initializeMaps() {
     if (typeof initMapsFerienwohnungen === 'function') {
         console.log("Google Maps API loaded and initializing maps.");
@@ -229,76 +240,79 @@ function initializeMaps() {
     }
 }
 
+// Wartet, bis die Seite vollständig geladen ist, bevor der Code ausgeführt wird
 document.addEventListener('DOMContentLoaded', () => {
-    const page = document.body.getAttribute('data-page');
+    const page = document.body.getAttribute('data-page'); // Liest den Seitentyp aus
 
-    // Initialisiere seiten-spezifische Funktionalitäten
+    // Startet die seiten-spezifische Funktionalität basierend auf dem Wert von 'data-page'
     switch (page) {
         case 'ferienwohnungen':
-            loadFerienwohnungenFromDB();
-            initializeSearchFunctionality();
-            initializeMaps();
+            loadFerienwohnungenFromDB(); // Lädt die Ferienwohnungen
+            initializeSearchFunctionality(); // Initialisiert die Suchfunktion
+            initializeMaps(); // Initialisiert Karten
             break;
         case 'buchung':
-            loadFerienwohnungenForBooking();
-            handlePreselectedApartment();
-            setMinDateForBooking();
+            loadFerienwohnungenForBooking(); // Lädt Ferienwohnungen für das Buchungsformular
+            handlePreselectedApartment(); // Wählt eine vorausgewählte Wohnung, falls vorhanden
+            setMinDateForBooking(); // Setzt das Mindestdatum für Buchungsauswahl
             document.getElementById('wohnungDropdown').addEventListener('change', (event) => {
-                updateWohnungDetails(event.target.value);
+                updateWohnungDetails(event.target.value); // Aktualisiert die Wohnungsauswahl basierend auf Dropdown-Änderungen
             });
             break;
         case 'inserate-bearbeiten':
-            loadInserateVerwaltung();
+            loadInserateVerwaltung(); // Lädt die Verwaltung der Inserate
             break;
     }
 });
 
-// Lade Ferienwohnungen für die Buchungsseite
+// Funktion, um Ferienwohnungen für die Buchungsseite zu laden
 async function loadFerienwohnungenForBooking() {
     try {
-        const response = await fetch('/api/ferienwohnungen');
+        const response = await fetch('/api/ferienwohnungen'); // API-Anfrage zur Datenbank
         const ferienwohnungen = await response.json();
         const wohnungDropdown = document.getElementById('wohnungDropdown');
-        wohnungDropdown.innerHTML = `<option value="" selected>Bitte wählen...</option>`;
+        wohnungDropdown.innerHTML = `<option value="" selected>Bitte wählen...</option>`; // Initialisiert Dropdown-Option
 
         ferienwohnungen.forEach(wohnung => {
-            const option = document.createElement('option');
+            const option = document.createElement('option'); // Erzeugt eine Option für jede Ferienwohnung
             option.value = wohnung._id;
             option.textContent = `${wohnung.name} (${wohnung.ort})`;
             wohnungDropdown.appendChild(option);
         });
 
-        handlePreselectedApartment(); // Sicherstellen, dass die vorausgewählte Wohnung nach dem Laden richtig ausgewählt ist
+        handlePreselectedApartment(); // Wählt eine vorausgewählte Wohnung, wenn vorhanden
     } catch (error) {
         console.error('Fehler beim Laden der Ferienwohnungen:', error);
     }
 }
 
-// Suchfunktionalität auf der Apartmentseite initialisieren
+// Initialisiert die Suchfunktion für Ferienwohnungen
 function initializeSearchFunctionality() {
     document.getElementById('searchInput').addEventListener('input', async function() {
-        const searchValue = this.value.toLowerCase();
+        const searchValue = this.value.toLowerCase(); // Holt und normalisiert den Suchbegriff
         try {
             const response = await fetch('/api/ferienwohnungen');
             const ferienwohnungen = await response.json();
+            // Filtert die Wohnungen basierend auf dem Ort
             const filteredWohnungen = ferienwohnungen.filter(wohnung =>
                 wohnung.ort.toLowerCase().includes(searchValue)
             );
-            displayFilteredWohnungen(filteredWohnungen);
+            displayFilteredWohnungen(filteredWohnungen); // Zeigt gefilterte Wohnungen an
         } catch (error) {
             console.error('Fehler beim Laden der Ferienwohnungen:', error);
         }
     });
-} 
+}
 
-// Zeige gefilterte Ferienwohnungen basierend auf der Sucheingabe an
+// Zeigt Ferienwohnungen basierend auf der Filterung an
 function displayFilteredWohnungen(filteredWohnungen) {
     const container = document.getElementById('ferienwohnungen-container');
-    container.innerHTML = '';
+    container.innerHTML = ''; // Container leeren
 
     if (filteredWohnungen.length === 0) {
-        container.innerHTML = `<p>Keine Ferienwohnungen gefunden.</p>`;
+        container.innerHTML = `<p>Keine Ferienwohnungen gefunden.</p>`; // Meldung bei fehlenden Ergebnissen
     } else {
+        // Erstellt eine Karte für jede gefilterte Ferienwohnung und fügt sie dem Container hinzu
         filteredWohnungen.forEach(wohnung => {
             const card = `
                 <a href="buchung.html?id=${wohnung._id}" class="text-decoration-none text-dark">
@@ -320,11 +334,11 @@ function displayFilteredWohnungen(filteredWohnungen) {
             container.innerHTML += card;
         });
 
-        initMapsFerienwohnungen(filteredWohnungen);
+        initMapsFerienwohnungen(filteredWohnungen); // Initialisiert Karten für die gefilterten Wohnungen
     }
 }
 
-// Initialisiere die Karte für die ausgewählte Wohnung auf der Buchungsseite
+// Initialisiert die Map für die Buchungsseite mit der spezifischen Wohnung
 function initMapBuchung(wohnung) {
     const mapContainer = document.getElementById('mapContainer');
     if (mapContainer && wohnung.lat && wohnung.lng) {
@@ -342,22 +356,22 @@ function initMapBuchung(wohnung) {
     }
 }
 
-// Bearbeite die Vorauswahl der Wohnung für das Buchungsformular
+// Bearbeitet eine Vorauswahl der Ferienwohnung anhand der URL-Parameter
 function handlePreselectedApartment() {
     const urlParams = new URLSearchParams(window.location.search);
-    const selectedWohnungId = urlParams.get('id');
+    const selectedWohnungId = urlParams.get('id'); // Holt die ID der Wohnung aus der URL
     if (selectedWohnungId) {
         const wohnungDropdown = document.getElementById('wohnungDropdown');
 
-        // Warten, bis die Wohnungen in das Dropdown geladen sind
+        // Verzögert die Vorauswahl, um sicherzustellen, dass das Dropdown-Menü geladen ist
         setTimeout(() => {
             wohnungDropdown.value = selectedWohnungId;
-            updateWohnungDetails(selectedWohnungId);
-        }, 100); // Leichte Verzögerung, um sicherzustellen, dass das Dropdown-Menü gefüllt ist
+            updateWohnungDetails(selectedWohnungId); // Aktualisiert die Details zur ausgewählten Wohnung
+        }, 100);
     }
 }
 
-// Aktualisiere die Details der ausgewählten Wohnung auf der Buchungsseite
+// Holt und zeigt die Details einer Wohnung basierend auf der ID an
 function updateWohnungDetails(wohnungId) {
     fetch(`/api/ferienwohnungen/${wohnungId}`)
     .then(response => response.json())
@@ -370,8 +384,9 @@ function updateWohnungDetails(wohnungId) {
         `;
         
         const wohnungBilder = document.getElementById('wohnungBilder');
-        wohnungBilder.innerHTML = '';  // Lösche alle vorherigen Bilder
+        wohnungBilder.innerHTML = ''; // Löscht vorherige Bilder
         if (wohnung.bilder && wohnung.bilder.length > 0) {
+            // Fügt alle Bilder der Wohnung hinzu
             wohnung.bilder.forEach(bild => {
                 const imgElement = document.createElement('img');
                 imgElement.src = `/${bild}`;
@@ -383,25 +398,27 @@ function updateWohnungDetails(wohnungId) {
     .catch(error => console.error('Fehler beim Laden der Ferienwohnung:', error));
 }
 
+// Wartet erneut auf das Laden der Seite und führt verwaltungsspezifische Funktionen aus
 document.addEventListener('DOMContentLoaded', () => {
     const page = document.body.getAttribute('data-page');
     if (page === 'inserate-bearbeiten') {
-        loadInserateVerwaltung();
+        loadInserateVerwaltung(); // Lädt Verwaltung, wenn auf der Inserate-Seite
     }
 });
 
-// Admin funktion: Ferienwohnungen laden und managen
+// Funktion für Administratoren, um Ferienwohnungen zu verwalten
 async function loadInserateVerwaltung() {
     try {
         const response = await fetch('/api/ferienwohnungen', {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}` // Authentifiziert die Anfrage
             }
         });
         const ferienwohnungen = await response.json();
         const inserateContainer = document.getElementById('inserate-container');
-        inserateContainer.innerHTML = '';
+        inserateContainer.innerHTML = ''; // Leert den Container
 
+        // Erstellt eine Karte für jede Wohnung, die bearbeitet werden kann
         ferienwohnungen.forEach(wohnung => {
             const card = `
                 <div class="col-md-4">
@@ -426,18 +443,18 @@ async function loadInserateVerwaltung() {
     }
 }
 
-// Ferienwohnungen löschen
+// Funktion, um ein Inserat zu löschen (nicht funktional)
 window.deleteInserat = async function(id) {
     try {
         const response = await fetch(`/api/ferienwohnungen/${id}`, {
             method: 'DELETE',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}` // Authentifizierungstoken für den Löschvorgang
             }
         });
         if (response.ok) {
             alert('Inserat gelöscht');
-            loadInserateVerwaltung();
+            loadInserateVerwaltung(); // Aktualisiert die Inserateliste nach Löschung
         } else {
             throw new Error('Fehler beim Löschen des Inserats');
         }
@@ -446,14 +463,15 @@ window.deleteInserat = async function(id) {
     }
 }
 
-// Platzhalterfunktion zum Bearbeiten eines Inserats
+// Funktion zum Bearbeiten eines Inserats (Platzhalter) (nicht funktional)
 window.editInserat = function(id) {
     alert(`Inserat ${id} bearbeiten`);
 }
-// Authentifizierung und Navigation Sichtbarkeit handhaben
+
+// Wartet auf das Laden der Seite, um die Navigation abhängig vom Authentifizierungsstatus zu steuern
 document.addEventListener('DOMContentLoaded', () => {
-    const authToken = localStorage.getItem('authToken');
-    const userRole = localStorage.getItem('userRole');
+    const authToken = localStorage.getItem('authToken'); // Authentifizierungstoken des Benutzers
+    const userRole = localStorage.getItem('userRole'); // Rolle des Benutzers
 
     const loginNav = document.getElementById('loginNav');
     const logoutNav = document.getElementById('logoutNav');
@@ -466,7 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
         profileLink.style.display = 'block';
 
         if (userRole === 'admin') {
-            adminNav.style.display = 'block';
+            adminNav.style.display = 'block'; // Zeigt Admin-Optionen für Administratoren an
         }
     } else {
         loginNav.style.display = 'block';
@@ -481,13 +499,13 @@ document.addEventListener('DOMContentLoaded', () => {
           const token = localStorage.getItem('authToken');
           const response = await fetch('/api/buchungen', {
             headers: {
-              'Authorization': `Bearer ${token}`
+              'Authorization': `Bearer ${token}` // Sendet das Token für geschützte Ressourcen
             }
           });
           const buchungen = await response.json();
           const container = document.getElementById('buchungen-container');
           container.innerHTML = '';
-      
+
           buchungen.forEach(buchung => {
             if (buchung.wohnungId) {
               const card = `
@@ -511,13 +529,13 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
           console.error('Fehler beim Laden der Buchungen:', error);
         }
-      }
+    }
     
-        if (logoutButton) {
+    if (logoutButton) {
         logoutButton.addEventListener('click', () => {
             localStorage.removeItem('authToken');
             localStorage.removeItem('userRole');
-            window.location.href = 'index.html';
+            window.location.href = 'index.html'; // Leitet zur Startseite um
         });
     }
 
@@ -526,33 +544,33 @@ document.addEventListener('DOMContentLoaded', () => {
             loadUserBookings();
         } else {
             alert('Bitte loggen Sie sich ein, um Ihre Buchungen zu sehen.');
-            window.location.href = 'login.html';
+            window.location.href = 'login.html'; // Weiterleitung zur Login-Seite
         }
     }
 });
 
-// Hinzufügen und Absenden eines neuen Inserats
+// Wartet, bis die Seite geladen ist, um ein neues Inserat hinzuzufügen
 document.addEventListener('DOMContentLoaded', () => {
-    const inseratForm = document.getElementById('inseratForm');
+    const inseratForm = document.getElementById('inseratForm'); // Holt das Formular-Element
 
     if (inseratForm) {
         inseratForm.addEventListener('submit', async function(event) {
-            event.preventDefault();
+            event.preventDefault(); // Verhindert das Standardverhalten beim Absenden des Formulars
 
-            const formData = new FormData(inseratForm);
+            const formData = new FormData(inseratForm); // Erfasst alle Formulardaten
 
             try {
                 const response = await fetch('/api/ferienwohnungen', {
-                    method: 'POST',
+                    method: 'POST', // HTTP POST-Anfrage
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}` // Authentifizierung mit Token
                     },
-                    body: formData
+                    body: formData // Sendet die Formulardaten im Anfrage-Body
                 });
                 if (response.ok) {
                     alert('Ferienwohnung erfolgreich hinzugefügt');
-                    inseratForm.reset();
-                    loadInserateVerwaltung();
+                    inseratForm.reset(); // Setzt das Formular zurück
+                    loadInserateVerwaltung(); // Aktualisiert die Liste der Inserate
                 } else {
                     const errorData = await response.json();
                     throw new Error(`Fehler beim Hinzufügen der Ferienwohnung: ${errorData.message}`);
@@ -565,64 +583,69 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Lädt die Details der Ferienwohnung basierend auf der ID aus der URL
 async function loadWohnungDetails() {
     const urlParams = new URLSearchParams(window.location.search);
-    const wohnungId = urlParams.get('id');
+    const wohnungId = urlParams.get('id'); // Holt die ID der Wohnung aus der URL
 
     if (wohnungId) {
         try {
-            const response = await fetch(`/api/ferienwohnungen/${wohnungId}`);
+            const response = await fetch(`/api/ferienwohnungen/${wohnungId}`); // Holt die Details der Ferienwohnung
             const wohnung = await response.json();
 
             document.getElementById('wohnung-bild').src = wohnung.bild ? '/' + wohnung.bild : 'img/placeholder.png';
-            initializeMap(wohnung._id, wohnung.latitude, wohnung.longitude);
+            initializeMap(wohnung._id, wohnung.latitude, wohnung.longitude); // Initialisiert die Karte mit den Wohnungsdetails
         } catch (error) {
             console.error('Error loading wohnung details:', error);
         }
     }
 }
 
+// Initialisiert die Map für die spezifische Ferienwohnung
 function initializeMap(id, lat, lng) {
     const map = new google.maps.Map(document.getElementById('wohnung-karte'), {
-        center: { lat: lat, lng: lng },
+        center: { lat: lat, lng: lng }, // Zentriert die Karte auf die übergebenen Koordinaten
         zoom: 15
     });
 
     new google.maps.Marker({
-        position: { lat: lat, lng: lng },
+        position: { lat: lat, lng: lng }, // Setzt einen Marker auf der Karte
         map: map
     });
 }
+
+// Wartet auf das Laden der Seite und führt seitenabhängige Aktionen aus
 document.addEventListener('DOMContentLoaded', () => {
-    const page = document.body.getAttribute('data-page');
+    const page = document.body.getAttribute('data-page'); // Liest den Seitentyp
 
     if (page === 'buchung') {
-        loadWohnungDetails();
+        loadWohnungDetails(); 
     }
 
-    const dateInput = document.querySelector('input[type="date"]');
+    const dateInput = document.querySelector('input[type="date"]'); // Holt das Datumseingabefeld
     
     if (dateInput) {
         const today = new Date();
         const day = String(today.getDate()).padStart(2, '0');
-        const month = String(today.getMonth() + 1).padStart(2, '0'); // Januar ist 0
+        const month = String(today.getMonth() + 1).padStart(2, '0'); // Korrigiert den Monatsindex
         const year = today.getFullYear();
         
-        const todayFormatted = year + '-' + month + '-' + day;
+        const todayFormatted = year + '-' + month + '-' + day; // Formatiert das heutige Datum
         
-        dateInput.setAttribute('min', todayFormatted);
+        dateInput.setAttribute('min', todayFormatted); // Setzt das minimale wählbare Datum
     }
 });
 
+// Funktion für Login-Status und Buchungsdetails
 document.addEventListener('DOMContentLoaded', () => {
-    const page = document.body.getAttribute('data-page');
+    const page = document.body.getAttribute('data-page'); 
 
     if (page === 'buchung') {
         if (checkLoginStatus()) {
-            document.getElementById('bookingFormContainer').style.display = 'block';
+            document.getElementById('bookingFormContainer').style.display = 'block'; // Zeigt das Buchungsformular für eingeloggte Benutzer an
             loadWohnungDetails();
         } else {
-            document.getElementById('loginMessage').style.display = 'block';
+            document.getElementById('loginMessage').style.display = 'block'; // Zeigt die Login-Meldung für nicht eingeloggte Benutzer an
         }
     }
 
@@ -631,7 +654,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dateInput) {
         const today = new Date();
         const day = String(today.getDate()).padStart(2, '0');
-        const month = String(today.getMonth() + 1).padStart(2, '0'); // Januar ist 0
+        const month = String(today.getMonth() + 1).padStart(2, '0');
         const year = today.getFullYear();
         
         const todayFormatted = year + '-' + month + '-' + day;
@@ -640,6 +663,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Zweite Instanz der loadWohnungDetails-Funktion, die Details zur Ferienwohnung lädt und die Karte initialisiert
 async function loadWohnungDetails() {
     const urlParams = new URLSearchParams(window.location.search);
     const wohnungId = urlParams.get('id');
@@ -649,11 +673,11 @@ async function loadWohnungDetails() {
             const response = await fetch(`/api/ferienwohnungen/${wohnungId}`);
             const wohnung = await response.json();
 
-            // Update das Bild
+            // Aktualisiert das Bild
             const wohnungBild = document.getElementById('wohnung-bild');
             wohnungBild.src = wohnung.bild ? '/' + wohnung.bild : 'img/placeholder.png';
 
-            // Karte initialisieren
+            // Initialisiert die Karte mit Wohnungskoordinaten
             initializeMap(wohnung._id, wohnung.lat, wohnung.lng);
         } catch (error) {
             console.error('Error loading wohnung details:', error);
@@ -661,6 +685,7 @@ async function loadWohnungDetails() {
     }
 }
 
+// Karte für die spezifische Wohnung auf der Buchungsseite initialisieren
 function initializeMap(id, lat, lng) {
     const map = new google.maps.Map(document.getElementById('wohnung-karte'), {
         center: { lat: lat, lng: lng },
@@ -672,8 +697,10 @@ function initializeMap(id, lat, lng) {
         map: map
     });
 }
+
+// Für das Absenden des Buchungsformulars
 document.getElementById('bookingForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
+    e.preventDefault(); // Verhindert die Standard-Formularübermittlung
 
     const data = {
         wohnungId: document.getElementById('wohnungDropdown').value,
@@ -690,17 +717,17 @@ document.getElementById('bookingForm').addEventListener('submit', async function
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}` // Authentifizierungstoken im Header
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify(data) // Sendet die Buchungsdaten als JSON
         });
 
         if (response.ok) {
             alert('Buchung erfolgreich');
-            window.location.href = 'index.html'; // Weiterleitung zur Startseite nach erfolgreicher Buchung
+            window.location.href = 'index.html'; // Leitet nach erfolgreicher Buchung zur Startseite weiter
         } else {
             const error = await response.json();
-            alert('Fehler bei der Buchung: ' + error.message);
+            alert('Fehler bei der Buchung: ' + error.message); // Fehlerbehandlung
         }
     } catch (error) {
         console.error('Fehler bei der Buchung:', error);
@@ -708,66 +735,73 @@ document.getElementById('bookingForm').addEventListener('submit', async function
     }
 });
 
+// Wartet, bis die Seite vollständig geladen ist, um seitenabhängige Aktionen durchzuführen
 document.addEventListener('DOMContentLoaded', () => {
-    const page = document.body.getAttribute('data-page');
+    const page = document.body.getAttribute('data-page'); // Holt den aktuellen Seitentyp aus dem Attribut 'data-page'
 
+    // Prüft, ob die aktuelle Seite die Buchungsseite ist
     if (page === 'buchung') {
-        if (checkLoginStatus()) {
-            document.getElementById('bookingFormContainer').style.display = 'block';
-            loadFerienwohnungenForBooking();
-            loadWohnungDetails();
+        if (checkLoginStatus()) { // Prüft, ob der Benutzer eingeloggt ist
+            document.getElementById('bookingFormContainer').style.display = 'block'; // Zeigt das Buchungsformular an
+            loadFerienwohnungenForBooking(); // Lädt die Ferienwohnungen für die Buchungsauswahl
+            loadWohnungDetails(); // Lädt Details der spezifischen Ferienwohnung
         } else {
-            document.getElementById('loginMessage').style.display = 'block';
+            document.getElementById('loginMessage').style.display = 'block'; 
         }
     }
 
+    // Setzt das Mindestdatum für das Datumseingabefeld auf das heutige Datum
     const dateInput = document.querySelector('input[type="date"]');
     
     if (dateInput) {
         const today = new Date();
-        const day = String(today.getDate()).padStart(2, '0');
-        const month = String(today.getMonth() + 1).padStart(2, '0'); // Januar ist 0
+        const day = String(today.getDate()).padStart(2, '0'); // Tag mit führender Null
+        const month = String(today.getMonth() + 1).padStart(2, '0'); // Monat mit führender Null, Januar ist 0
         const year = today.getFullYear();
         
-        const todayFormatted = year + '-' + month + '-' + day;
+        const todayFormatted = year + '-' + month + '-' + day; // Formatiert das Datum im Format 'YYYY-MM-DD'
         
-        dateInput.setAttribute('min', todayFormatted);
+        dateInput.setAttribute('min', todayFormatted); // Setzt das minimale wählbare Datum auf das heutige Datum
     }
 });
 
+// Lädt die Ferienwohnungen für das Dropdown-Menü auf der Buchungsseite
 async function loadFerienwohnungenForBooking() {
     try {
-        const response = await fetch('/api/ferienwohnungen');
+        const response = await fetch('/api/ferienwohnungen'); // API-Anfrage zum Laden der Ferienwohnungen
         const ferienwohnungen = await response.json();
-        const wohnungDropdown = document.getElementById('wohnungDropdown');
-        wohnungDropdown.innerHTML = `<option value="" selected>Bitte wählen...</option>`;
+        const wohnungDropdown = document.getElementById('wohnungDropdown'); // Holt das Dropdown-Menü
+        wohnungDropdown.innerHTML = `<option value="" selected>Bitte wählen...</option>`; // Setzt die Standardoption
 
+        // Fügt jede Ferienwohnung als Option ins Dropdown-Menü hinzu
         ferienwohnungen.forEach(wohnung => {
             const option = document.createElement('option');
             option.value = wohnung._id;
-            option.textContent = `${wohnung.name} (${wohnung.ort})`;
+            option.textContent = `${wohnung.name} (${wohnung.ort})`; // Setzt den Text und Wert für jede Option
             wohnungDropdown.appendChild(option);
         });
 
-        handlePreselectedApartment(); // Sicherstellen, dass die vorausgewählte Wohnung nach dem Laden richtig ausgewählt ist
+        handlePreselectedApartment(); // Wählt eine Wohnung voraus, falls eine ID vorhanden ist
     } catch (error) {
         console.error('Fehler beim Laden der Ferienwohnungen:', error);
     }
 }
 
+// Lädt Details einer Ferienwohnung basierend auf der ID aus der URL
 async function loadWohnungDetails() {
     const urlParams = new URLSearchParams(window.location.search);
-    const wohnungId = urlParams.get('id');
+    const wohnungId = urlParams.get('id'); // Holt die ID der Wohnung aus der URL
 
     if (wohnungId) {
         try {
             const response = await fetch(`/api/ferienwohnungen/${wohnungId}`);
             const wohnung = await response.json();
 
+            // Aktualisiert das Bild der Wohnung, falls vorhanden
             const wohnungBild = document.getElementById('wohnung-bild');
             wohnungBild.src = wohnung.bild ? '/' + wohnung.bild : 'img/placeholder.png';
 
-
+            // Initialisiert die Karte mit den Koordinaten der Wohnung
             initializeMap(wohnung._id, wohnung.lat, wohnung.lng);
         } catch (error) {
             console.error('Error loading wohnung details:', error);
@@ -775,23 +809,25 @@ async function loadWohnungDetails() {
     }
 }
 
+// Prüft, ob der Benutzer eingeloggt ist, indem auf den Authentifizierungstoken geprüft wird
 function checkLoginStatus() {
-    const authToken = localStorage.getItem('authToken');
+    const authToken = localStorage.getItem('authToken'); // Holt den Token aus dem Local Storage
     return !!authToken; // Gibt true zurück, wenn ein Token vorhanden ist, andernfalls false
 }
 
+// Initialisiert die Karte für die Ferienwohnung basierend auf ihren Koordinaten
 function initializeMap(id, lat, lng) {
-    const mapContainer = document.getElementById('mapContainer');
+    const mapContainer = document.getElementById('mapContainer'); // Holt den Map-Container
     if (mapContainer && lat && lng) {
-        mapContainer.style.display = 'block';
+        mapContainer.style.display = 'block'; // Zeigt den Kartencontainer an, wenn Koordinaten vorhanden sind
 
         const map = new google.maps.Map(mapContainer, {
-            center: { lat: lat, lng: lng },
+            center: { lat: lat, lng: lng }, // Zentriert die Karte auf die übergebenen Koordinaten
             zoom: 12
         });
 
         new google.maps.Marker({
-            position: { lat: lat, lng: lng },
+            position: { lat: lat, lng: lng }, // Setzt einen Marker auf der Karte
             map: map
         });
     }
